@@ -1,0 +1,445 @@
+var Vector = require('./Vector');
+var Utils = require('./Utils');
+
+function Player(id) {
+    this.id = id;
+
+    this.pos = new Vector(0, 0);
+    this.w = 25;
+    this.h = 22;
+
+    this.name = "USR_" + id;
+    this.level = 1;
+    this.hp = 10;
+    this.tank_moving_speed = 30;//30-80
+    this.score = 0;
+    this.lbdisplay = "";
+
+    var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
+
+    this.tank_angle = 0;
+    this.tank_angle_to_rotate = 0; //angle to rotate to
+    this.tank_rotating_status = 0; //not rotating, > 0 in rotating; 1 anticlockwise; 2: clockwise
+    this.moving_direction = random_direction; //move status 1, 2, 3,4
+    this.tank_rotating_speed = 320;
+
+    //current angle of the gun: 0, 90, 180, 270
+    this.gun_angle = random_direction * 90 - 90;
+
+    //the angle need to rotate to before shooting; > 0 rotate anticlockwise ; < 0: clockwise
+    this.gun_angle_to_rotate = 0;
+
+    /*
+     * gun_rotating_status = -1: don't  rotate; =0 finishing rotate, not yet shoot;
+     * =1 in anticlockwise rotating; =2 in clockwise rotating
+     */
+    this.gun_rotating_status = -1;
+    this.gun_rotating_speed = 300;
+
+    this.room_id = null;
+    this.zone_id = 0;
+
+    this.pack_bullet = [];
+    this.pack_player = [];
+    this.pack_items = [];
+    this.pack_obs = [];
+
+    this.type = 1;// 1 la player binh thuong, -1 la Boot
+
+    this.is_collided = false;
+    this.is_collidedWithOtherTank = false;
+	this.count = 0;
+}
+
+/*
+ * Received the target angle, set the gun_angle_to_rotate and set gun_rotating status
+ */
+Player.prototype.changeGunAngle = function (target_angle) {
+
+    //ensure 0 <= gun_angle  <= 360
+    if (Math.abs(this.gun_angle) > 360) {
+        this.gun_angle = this.gun_angle % 360;
+    }
+
+    this.gun_angle = Math.round(this.gun_angle);
+    if (this.gun_angle < 0) {
+        this.gun_angle = this.gun_angle + 360;
+    }
+
+    // gun_angle_to_rotate always < 180; + anticlockwise; - clockwise
+    //set the smallest angle to rotate
+    var delta_angle = this.gun_angle - target_angle;
+    if (delta_angle > 0) {
+        this.gun_angle_to_rotate = (Math.abs(delta_angle) > 180) ? 360 - Math.abs(delta_angle) : -Math.abs(delta_angle);
+    } else {
+        this.gun_angle_to_rotate = (Math.abs(delta_angle) > 180) ? Math.abs(delta_angle) - 360 : Math.abs(delta_angle);
+    }
+
+    //this.gun_rotating_status = 1 (anticlockwise); =2 clockwise
+    this.gun_rotating_status = (this.gun_angle_to_rotate > 0) ? 1 : 2;
+	
+    if (Math.abs(this.gun_angle_to_rotate) < 5) { //too small
+        this.gun_angle = target_angle; //set gun angle to target angle
+        this.gun_rotating_status = 0;  //mark as finish rotating gun
+
+    }
+}
+
+/*
+ * Update the gun_angle and mark as fire if finish rotating
+ */
+Player.prototype.updateGunAngleAndStartingFire = function (delta_time) {
+    if (this.gun_rotating_status < 0) { //don't rotate and don't fire
+        return 0;
+    }
+
+	/*
+    if (Math.abs(this.gun_angle) > 270) {
+        console.log("Error: gun_angle is larger than 270 "+ this.gun_angle);
+    }*/
+
+    //update the gun_angle, gun_angle_to_rotate, gun_rotating_status each step
+    if (this.gun_rotating_status > 0) { //in rotating
+        var delta_angle = Math.round(this.gun_rotating_speed * delta_time);
+
+        if (this.gun_rotating_status == 1) {//anticlockwise
+            var left_angle_to_rotate = this.gun_angle_to_rotate - delta_angle;
+            if (left_angle_to_rotate < 0) {
+                this.gun_angle = this.gun_angle + this.gun_angle_to_rotate; //set to final angle
+                this.gun_angle_to_rotate = 0;
+                this.gun_rotating_status = 0;// mark to starting fire
+            } else {
+                this.gun_angle_to_rotate = left_angle_to_rotate; //left angle to rotate
+                this.gun_angle = this.gun_angle + delta_angle; //current angle
+            }
+        } else { //clockwise (gun_angle_to_rotate <0)
+            var left_angle_to_rotate = this.gun_angle_to_rotate + delta_angle;
+            if (left_angle_to_rotate > 0) {//stop rotating
+                this.gun_angle = this.gun_angle + this.gun_angle_to_rotate; //current angle
+                this.gun_angle_to_rotate = 0; //stop rotate
+                this.gun_rotating_status = 0;// fire
+            } else { //continute to rotating
+                this.gun_angle_to_rotate = left_angle_to_rotate; //
+                this.gun_angle = this.gun_angle - delta_angle;
+            }
+        }
+
+    }
+
+
+    if (this.gun_rotating_status == 0) { //=0 fire, =-1 do nothing, =1, 2 continute to rotate in anti and clockwise
+        this.gun_rotating_status = -1;
+        return 1; //indicate starting fire
+    } else {
+        return 0; //do nothing
+    }
+
+}
+
+/*
+ * Receive direction signal from client, set the  moving_direction and tank_angle_to_rotate
+ */
+Player.prototype.setNewDirection = function (new_direction) {
+    if (Math.round(this.tank_angle_to_rotate) !== 0) { //in rotating --> do nothing
+        return;
+    }
+
+    //not same axis --> identify angle to rotating
+    if (this.moving_direction % 2 !== new_direction % 2) {
+        if (this.moving_direction === 1) {//0
+            this.tank_angle_to_rotate = (new_direction === 2) ? 90 : -90;
+        } else if (this.moving_direction === 2) {//90
+            this.tank_angle_to_rotate = (new_direction === 3) ? 90 : -90;
+        } else if (this.moving_direction === 3) {//180
+            this.tank_angle_to_rotate = (new_direction === 2) ? -90 : 90;
+        } else if (this.moving_direction === 4) {//270
+            this.tank_angle_to_rotate = (new_direction === 3) ? -90 : 90;
+        }
+        this.tank_rotating_status = 2;  //mark as in rotating
+    }
+
+    //set new direction
+    this.moving_direction = new_direction;
+
+
+}
+
+/*
+ * Update tank angle for each step
+ * then update position of the tank
+ */
+
+Player.prototype.updatePosition = function (delta_time) {	
+    if (this.tank_angle_to_rotate > 0) { // anticlockwise
+        var delta_angle = Math.round(delta_time * this.tank_rotating_speed); // angle has rotated in one frame
+
+        this.tank_angle_to_rotate = this.tank_angle_to_rotate - delta_angle; //angle left to final position
+        if (this.tank_angle_to_rotate < 5) { //< 5 stop rotate
+            this.tank_angle_to_rotate = 0;   //reset angle rotate
+            this.tank_rotating_status = 0;		//don' rotate
+        } else {
+            this.tank_angle = this.tank_angle + delta_angle; //current angle of tank
+        }
+    } else if (this.tank_angle_to_rotate < 0) { //clockwise
+        var delta_angle = Math.round(delta_time * this.tank_rotating_speed);
+        var lastTG = this.tank_angle_to_rotate;
+        this.tank_angle_to_rotate = this.tank_angle_to_rotate + delta_angle;
+        if (this.tank_angle_to_rotate > -5) {
+            this.tank_rotating_status = 0;
+            this.tank_angle_to_rotate = 0;
+        } else {
+            this.tank_angle = this.tank_angle - delta_angle; //current angle of tank
+        }
+    }
+
+
+    if (this.tank_rotating_status > 0) {  //need to stop rotate before moving
+        return;
+    }
+
+    if (this.moving_direction == 1) { //x-axis forward
+        this.pos.x += this.tank_moving_speed * delta_time;
+        this.tank_angle = 0;
+    }
+    else if (this.moving_direction == 2) //y-axis forward
+    {
+        this.pos.y += this.tank_moving_speed * delta_time;
+        this.tank_angle = 90;
+    }
+    else if (this.moving_direction == 3) //x-axis backward
+    {
+        this.pos.x -= this.tank_moving_speed * delta_time;
+        this.tank_angle = 0;
+    }
+    else if (this.moving_direction == 4) //y-axis backward
+    {
+        this.pos.y -= this.tank_moving_speed * delta_time;
+        this.tank_angle = 90;
+    }
+
+}
+//collision happen, adjust the position
+Player.prototype.adjustPosition = function (distance_to_adjust) {
+
+
+    if (this.tank_rotating_status > 0) { //in rotating ==> do nothing
+        return;
+    }
+
+    if (this.moving_direction === 1) { //x-asis forward
+        this.pos.x -= distance_to_adjust;
+    }
+    else if (this.moving_direction === 2) {
+        this.pos.y -= distance_to_adjust; //y-asis forward
+    }
+    else if (this.moving_direction === 3) { //x-asis backward
+        this.pos.x += distance_to_adjust;
+    }
+    else if (this.moving_direction === 4) { //y-asis backward
+        this.pos.y += distance_to_adjust;
+    }
+
+
+}
+
+/*
+ * Verify if tank collided with Map edge
+ * If yes, adjust the position and change direction
+ */
+Player.prototype.checkCollisionWithMapEdge = function () {
+    if (this.pos.x < -1450) {
+        this.pos.x = -1450;
+        this.is_collided = true;
+    } else if (this.pos.x > 1450) {
+        this.pos.x = 1450;
+        this.is_collided = true;
+    }
+
+    if (this.pos.y < -950) {
+        this.pos.y = -950;
+        this.is_collided = true;
+    } else if (this.pos.y > 950) {
+        this.pos.y = 950;
+        this.is_collided = true;
+    }
+    if (this.is_collided) {
+        this.changeDirection();
+    }
+}
+
+/*
+ * change direction of the tank
+ */
+Player.prototype.changeDirection = function () {
+
+    this.moving_direction += (Math.random() >= 0.5) ? 1 : -1;
+    this.adjustMovingDirection();
+	this.is_collided = false;
+	
+}
+
+
+Player.prototype.adjustMovingDirection = function () {
+    if (this.moving_direction < 1) {
+        this.moving_direction = 4;
+    }
+    if (this.moving_direction > 4) {
+        this.moving_direction = 1;
+    }
+
+}
+
+//check if collision happen, if yes, adjust the position and change the direction
+Player.prototype.checkCollisionWithObstacle = function (obstacle) {
+	
+    var dtX = Math.abs(this.pos.x - obstacle.x);
+    var dtY = Math.abs(this.pos.y - obstacle.y);
+    var kcW = this.w / 2 + obstacle.w / 2;
+    var kcH = this.h / 2 + obstacle.h / 2;	
+    if (dtX < kcW && dtY < kcH) {
+        this.is_collided = true;
+        if (typeof(this.moving_direction) === "string") {
+            this.moving_direction = parseInt(this.moving_direction);
+        }
+        var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
+
+        this.adjustPosition(overlapDistance);
+        this.changeDirection();
+    }
+}
+
+//check if collision with other tank happen, if yes, adjust position, change direction and
+// return true, otherwise return 0
+Player.prototype.checkCollisionWithOtherTank = function (tank) {
+    var dtX = Math.abs(this.pos.x - tank.pos.x);
+    var dtY = Math.abs(this.pos.y - tank.pos.y);
+    var kcW = this.w / 2 + tank.w / 2;
+    var kcH = this.h / 2 + tank.h / 2;
+    if (dtX < kcW && dtY < kcH) {
+        this.is_collided = true;
+        var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
+        this.adjustPosition(overlapDistance);
+        this.changeDirection();
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+Player.prototype.reset = function (x, y) {
+    this.pos.x = x;
+    this.pos.y = y;
+    this.tank_moving_speed = 80;
+    this.hp = 10;
+    this.is_remove = false;
+}
+
+Player.prototype.reduceHp = function (delta_hp) {
+    this.hp = Number(this.hp) - Number(delta_hp);
+    this.is_remove = (this.hp <= 0);
+}
+
+Player.prototype.beShooted = function (shooter_id) {
+    this.reduceHp(1);
+    if (shooter_id !== null){
+        this.is_shooted = true;
+        this.shooter_id = shooter_id;
+    }
+	
+}
+
+Player.prototype.fireOnTarget = function () {
+    this.score++;
+}
+
+
+Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
+	this.pack_player =[];
+    var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
+    for (var i=0; i < tank_arr.length; i++){
+        var tank = tank_arr[i];
+        //don't send information as this tank is in collision
+        var strspPush = (this.is_collided)? "": tank.tank_moving_speed + "|" + tank.moving_direction + "|" + tank.tank_rotating_status;
+
+        this.pack_player.push({
+            x: Number(tank.pos.x).toFixed(2) + "",
+            y: Number(tank.pos.y).toFixed(2) + "",
+            id: tank.id + "",
+            r: Number(tank.tank_angle).toFixed(2) + "",
+            //typeTank:player_tmp.typeTank,
+            lbdisplay: tank.lbdisplay,
+            level: tank.level + "",
+            score: tank.score + "",
+            sp: strspPush,
+            gR: tank.gun_angle + ""
+        });
+    }
+     
+	
+}
+
+
+Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
+	this.pack_obs = [];
+    var obstacle_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_obstacle_list);
+    
+    for (var i=0; i < obstacle_arr.length; i++){
+        var obstacle = obstacle_arr[i];
+        if (Utils.distace2Object(this.pos, obstacle) < 400) {
+            this.pack_obs.push({
+                x: obstacle.x,
+                y: obstacle.y,
+                w: obstacle.w,
+                h: obstacle.h,
+                id: obstacle.id+""
+            });
+        }
+
+    }
+     
+}
+
+
+Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
+    var bullet_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_bullet_list);
+	//console.log('around me '+ JSON.stringify(bullet_arr));
+    this.pack_bullet = [];
+    for (var i=0; i < bullet_arr.length; i++){
+        var bullet = bullet_arr[i];
+		JSON.stringify(bullet);
+        this.pack_bullet.push({
+            x: Number(bullet.pos.x),
+            y: Number(bullet.pos.y),
+            opp: bullet.opacity,
+            id: bullet.id+""
+        });
+
+    }
+}
+
+
+Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
+    var explosion_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_explosion_list);
+    this.pack_explosion = [];
+    for (var i=0; i < explosion_arr.length; i++){
+        var explosion = explosion_arr[i];
+        this.pack_explosion.push({
+            x: Number(explosion.x).toFixed(2) + "",
+            y: Number(explosion.y).toFixed(2) + "",
+            id: explosion.id + "",
+            hp: explosion.hp + ""
+        });
+
+    }
+    
+}
+
+Player.prototype.resetPackArr = function(){
+	this.pack_explosion = [];
+	this.pack_bullet = [];
+	this.pack_obs = [];
+	this.pack_player = [];
+}
+
+module.exports = Player;

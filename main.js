@@ -269,7 +269,7 @@ setInterval(function(){
 
 
 setInterval(function(){
-	var timedt=60/1000;
+	var timedt=40/1000;
 	for(var irname  in ROOM_LIST){
 		var roomtmp=ROOM_LIST[irname];
 		roomtmp.updateFrameStep(timedt);

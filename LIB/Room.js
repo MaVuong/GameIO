@@ -10,23 +10,23 @@ function Room(id) {
 
     this.PLAYER_LIST = {}; //tank list
     this.count_player = 0;
-	
+    
     this.EXPLOSION_LIST = {};
     this.count_explosion = 0;
 
-	this.ITEM_LIST = {};
-	this.count_item = 0;
-	
+    this.ITEM_LIST = {};
+    this.count_item = 0;
+    
     this.BULLET_LIST = {};
     this.count_bullet = 0;
 
     this.OBSTACLE_LIST = null;// list of obstacles
     this.FREE_ZONE_LIST = null; //list of free zones to generate random items
-	
+    
     this.ZONE_LIST = null;  //array of zones, each zone is an array of obstacles
     this.FREE_POSITION_LIST = null;   //free positions
     
-	this.AI_LIST = [];     //ai tank list
+    this.AI_LIST = [];     //ai tank list
 
     this.ai_id = -1; //starting id of ai
     this.ai_add_interval = 0;
@@ -56,7 +56,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
     var zone_bullet_arr = []; //array of zones, each zone is array of bullets
     var zone_item_arr = [];
     var zone_explosion_arr = [];//array of zones, each zone is array of explosions
-	var zone_item_arr = [];//array of zones, each zone is array of items
+    var zone_item_arr = [];//array of zones, each zone is array of items
 
     // init the array
     for (var i = 0; i < 100; i++) {
@@ -64,7 +64,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
         zone_bullet_arr.push([]);
         zone_item_arr.push([]);
         zone_explosion_arr.push([]);
-		zone_item_arr.push([]);
+        zone_item_arr.push([]);
     }
 
     //delete all bullet are marked as is_remove from previous frame
@@ -76,21 +76,21 @@ Room.prototype.updateFrameStep = function(delta_time) {
     //delete all items are marked as is_removed = true from previous frame
     this.deleteObjectsFromPreviousStep(this.ITEM_LIST, false);
 
-	
-	//update all explosion around me, explosion is calculated from previous frame, need to delete before calculate new explosions
-	this.updateExplosionsAroundTanks(zone_explosion_arr);
+    
+    //update all explosion around me, explosion is calculated from previous frame, need to delete before calculate new explosions
+    this.updateExplosionsAroundTanks(zone_explosion_arr);
 
-	//reset to calculate new explosions
-	zone_explosion_arr = [];
+    //reset to calculate new explosions
+    zone_explosion_arr = [];
     for (var i = 0; i < 100; i++) {
         zone_explosion_arr.push([]);
     }
 
-	
+    
     //update tank positions and push tanks into their right zones
     this.updateObjectPositionAndPushIntoRightZone(this.PLAYER_LIST, zone_tank_arr, delta_time);
-	
-	//update bullet position and push the bullet into the right zones
+    
+    //update bullet position and push the bullet into the right zones
     this.updateObjectPositionAndPushIntoRightZone(this.BULLET_LIST, zone_bullet_arr, delta_time);
 
     //check collision between Bullet-map, obstacles, tanks
@@ -99,14 +99,14 @@ Room.prototype.updateFrameStep = function(delta_time) {
     //check collision between tanks, update the explosion list
     this.checkCollisionOfTanks(zone_tank_arr, zone_item_arr);
 
-	//update gun angle and fire when finish rotate the gun
+    //update gun angle and fire when finish rotate the gun
     this.updateGunAngleAndFire(delta_time);
 
     this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr);
 
-//    this.updateAi(zone_tank_arr); //change the direction if a number is reached
+    this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
-  //  this.updateAddingAi(delta_time);
+    this.updateAddingAi(delta_time);
 
 }
 
@@ -201,9 +201,9 @@ Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
     for (var i = 0, l = arrToDelete.length; i < l; i++) {
         //if tank and real player ==> just reset; otherwise delete object
         if (isTank && arrToDelete[i] > 0) {
-            this.resetPlayer(object_array[arrToDelete[i]]);			
-        } else {			
-            delete object_array[arrToDelete[i]]; //delete the object						
+            this.resetPlayer(object_array[arrToDelete[i]]);         
+        } else {            
+            delete object_array[arrToDelete[i]]; //delete the object                        
         }
 
 
@@ -243,32 +243,32 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
             var tank = tank_arr[j];
             if ((bullet.player_id !== tank.id) && bullet.checkCollisionWithTank(tank)) {
                 bullet.is_remove = true;
-				
-				if (!tank.is_remove){
-					var is_last_bullet = tank.beShooted(shooter_id); // reduce hp, set the shooter
-					if (is_last_bullet){ //generate items and make Explosion
-					
-						//generae item		
-						var tank_arr_1 = this.getAllTanksAroundMe(tank.zone_id, zone_tank_arr);					
-						var obstacle_arr_1 = this.getAllObstaclesAroundMe(tank.zone_id);        
-						this.generateItems(tank, tank_arr_1, obstacle_arr_1);	
-						
-						//make explosion
-						this.count_explosion++;
+                
+                if (!tank.is_remove){
+                    var is_last_bullet = tank.beShooted(shooter_id); // reduce hp, set the shooter
+                    if (is_last_bullet){ //generate items and make Explosion
+                    
+                        //generae item      
+                        var tank_arr_1 = this.getAllTanksAroundMe(tank.zone_id, zone_tank_arr);                 
+                        var obstacle_arr_1 = this.getAllObstaclesAroundMe(tank.zone_id);        
+                        this.generateItems(tank, tank_arr_1, obstacle_arr_1);   
+                        
+                        //make explosion
+                        this.count_explosion++;
                         var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle);
                         //list of explosion all over the map
                         this.EXPLOSION_LIST[explosion.id] = explosion;
-					
-						
-					}	
-					
-					var shooter_id = null;
-					if (this.PLAYER_LIST.hasOwnProperty(bullet.player_id)) {
-						var shooter = this.PLAYER_LIST[bullet.player_id];
-						shooter_id = shooter.id;
-						shooter.fireOnTarget(tank.level, is_last_bullet); //award the shooter
-					}					
-				}
+                    
+                        
+                    }   
+                    
+                    var shooter_id = null;
+                    if (this.PLAYER_LIST.hasOwnProperty(bullet.player_id)) {
+                        var shooter = this.PLAYER_LIST[bullet.player_id];
+                        shooter_id = shooter.id;
+                        shooter.fireOnTarget(tank.level, is_last_bullet); //award the shooter
+                    }                   
+                }
                 
             }
         }
@@ -280,15 +280,15 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
  * Generate items when a tank is killed
 */
 Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
-	for (i=0; i < tank.level; i++){
-		var pos = Utils.getRandomPoint(tank.pos.x, tank.pos.y, 100, tank_arr, obstacle_arr);
-		var type = (Math.random() < 0.5)? 1 : 2;
-		this.count_item ++;
-		if (pos !== null){
-			var item = new Item(pos.x, pos.y, this.count_item, type);
-			this.ITEM_LIST.push(item);
-		}
-	}
+    for (i=0; i < tank.level; i++){
+        var pos = Utils.getRandomPoint(tank.pos.x, tank.pos.y, 100, tank_arr, obstacle_arr);
+        var type = (Math.random() < 0.5)? 1 : 2;
+        this.count_item ++;
+        if (pos !== null){
+            var item = new Item(pos.x, pos.y, this.count_item, type);
+            this.ITEM_LIST.push(item);
+        }
+    }
 }
 
 
@@ -303,7 +303,7 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
         var current_tank = this.PLAYER_LIST[tankid];
 
-	    //check collision with other tanks
+        //check collision with other tanks
         //if the tank is collided with other, don't futher process
         // need to be revise later as this not deal with collision of multiple tanks
         if (!current_tank.is_collided_with_other_tank) {
@@ -314,12 +314,12 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
                     if (Utils.distace2Object(current_tank.pos, other_tank.pos) < 100) {
                         if (current_tank.checkCollisionWithOtherTank(other_tank)) {
                             this.count_explosion++;
-							
-							//Explosion(x, y, id, tank_angle, gun_angle, zone_id)							
-							var x_explosion = (current_tank.hp > other_tank.hp)? other_tank.pos.x : current_tank.pos.x;							
-							var y_explosion = (current_tank.hp > other_tank.hp)? other_tank.pos.y : current_tank.pos.y;							
-							var tank_anle = (current_tank.hp > other_tank.hp)? other_tank.tank_angle : current_tank.tank_angle;
-							var gun_anle = (current_tank.hp > other_tank.hp)? other_tank.gun_anle : current_tank.gun_anle;														
+                            
+                            //Explosion(x, y, id, tank_angle, gun_angle, zone_id)                           
+                            var x_explosion = (current_tank.hp > other_tank.hp)? other_tank.pos.x : current_tank.pos.x;                         
+                            var y_explosion = (current_tank.hp > other_tank.hp)? other_tank.pos.y : current_tank.pos.y;                         
+                            var tank_anle = (current_tank.hp > other_tank.hp)? other_tank.tank_angle : current_tank.tank_angle;
+                            var gun_anle = (current_tank.hp > other_tank.hp)? other_tank.gun_anle : current_tank.gun_anle;                                                      
                             var explosion = new Explosion(x_explosion,y_explosion, this.count_explosion, tank_angle, gun_angle);
 
                             //list of explosion all over the map
@@ -328,7 +328,7 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
                             //mark to not duplicate
                             current_tank.is_collided_with_other_tank = true;
                             other_tank.is_collided_with_other_tank = true;
-													
+                                                    
                             //mark to process at next frame
                             current_tank.reduceHp(explosion.hp);
                             other_tank.reduceHp(explosion.hp);
@@ -338,22 +338,22 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
                 }
             }
         }
-	
+    
         //check collection with map edge
         current_tank.checkCollisionWithMapEdge();
 
         //check collision with obstacle
-		
-		var obstacle_arr = this.getAllObstaclesAroundMe(current_tank.zone_id);        
-		for (var i = 0; i < obstacle_arr.length; i++) {			
+        
+        var obstacle_arr = this.getAllObstaclesAroundMe(current_tank.zone_id);        
+        for (var i = 0; i < obstacle_arr.length; i++) {         
             current_tank.checkCollisionWithObstacle(obstacle_arr[i]);
         }
-		
-		//check if tank get item
-		var item_arr = this.getAllItemsAroundMe(current_tank.zone_id, zone_item_arr);
-		for (var i=0; i < item_arr.length; i++){
-			current_tank.checkItem(item_arr[i]);
-		}
+        
+        //check if tank get item
+        var item_arr = this.getAllItemsAroundMe(current_tank.zone_id, zone_item_arr);
+        for (var i=0; i < item_arr.length; i++){
+            current_tank.checkItem(item_arr[i]);
+        }
     }
 }
 
@@ -373,11 +373,11 @@ Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_ar
 
 Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr){
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
-        if (tankid > 0){ //real user		
-		    for (var i=0, l=this.EXPLOSION_LIST.length; i < l; i++){
-				var explosion = this.EXPLOSION_LIST[i];
-				Utils.putObjectIntoRightZone(explosion, explosion.x, explosion.y, zone_explosion_arr);	
-			}
+        if (tankid > 0){ //real user        
+            for (var i=0, l=this.EXPLOSION_LIST.length; i < l; i++){
+                var explosion = this.EXPLOSION_LIST[i];
+                Utils.putObjectIntoRightZone(explosion, explosion.x, explosion.y, zone_explosion_arr);  
+            }
             var tank = this.PLAYER_LIST[tankid];
             tank.updateAllExplosionsAroundMe(zone_explosion_arr);
         }
@@ -412,7 +412,7 @@ Room.prototype.updateAi = function (zone_tank_arr) {
             var boot = this.PLAYER_LIST[key];
             boot.updateState();
 
-			var can_fire = Date.now() - boot.last_fire < 300;
+            var can_fire = Date.now() - boot.last_fire < 300;
             if (boot.is_shooted && boot.shooter_id !== 0) {                
                 if (can_fire && this.PLAYER_LIST.hasOwnProperty(boot.shooter_id)) {
                     var target = this.PLAYER_LIST[boot.shooter_id];
@@ -420,13 +420,13 @@ Room.prototype.updateAi = function (zone_tank_arr) {
                 }
                 boot.is_shooted = false;
                 boot.shooter_id = 0;
-				boot.changeDirection();
+                boot.changeDirection();
             } else {
-				if (can_fire){
-					var tank_arr = this.getAllTanksAroundMe(boot.zone_id, zone_tank_arr);
-					var obstacle_arr = this.getAllObstaclesAroundMe(boot.zone_id);
-					boot.shootClosestTank(tank_arr, obstacle_arr);					
-				}
+                if (can_fire){
+                    var tank_arr = this.getAllTanksAroundMe(boot.zone_id, zone_tank_arr);
+                    var obstacle_arr = this.getAllObstaclesAroundMe(boot.zone_id);
+                    boot.shootClosestTank(tank_arr, obstacle_arr);                  
+                }
             }
         }
     }
@@ -451,6 +451,7 @@ Room.prototype.addingAi = function() {
      countAddAI = 4;
      }
 */
+    //console.log("alskdjalksdjlas");
     var free_pos_number = this.FREE_POSITION_LIST.length;
     for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
 
@@ -514,28 +515,28 @@ Room.prototype.getFreePos = function () {
 
 
 Room.prototype.createNewBullets = function (tank) {
-	var shooting_streng = Player.getShootingStrength(tank.level);
-	for (var i =0; i < shooting_streng; i++){
-		this.count_bullet++;	
-		if (this.count_bullet > 1000000) {
-			this.count_bullet = 1;
-		}
-		
-		//delta angle between bullets: 0.5 
-		var delta = (i % 2 === 0) ? 0.5* i : -0.5*i;
-		var shooting_angle =  tank.gun_angle + delta;
-		
-		var xbegin = tank.pos.x;
-		var ybegin = tank.pos.y;
-		var start_pos = new Vector(xbegin, ybegin);
-		var new_bullet = new Bullet(tank.id, this.count_bullet);
+    var shooting_streng = Player.getShootingStrength(tank.level);
+    for (var i =0; i < shooting_streng; i++){
+        this.count_bullet++;    
+        if (this.count_bullet > 1000000) {
+            this.count_bullet = 1;
+        }
+        
+        //delta angle between bullets: 0.5 
+        var delta = (i % 2 === 0) ? 0.5* i : -0.5*i;
+        var shooting_angle =  tank.gun_angle + delta;
+        
+        var xbegin = tank.pos.x;
+        var ybegin = tank.pos.y;
+        var start_pos = new Vector(xbegin, ybegin);
+        var new_bullet = new Bullet(tank.id, this.count_bullet);
 
-		new_bullet.setMoveDirection(shooting_angle, start_pos);
-		this.BULLET_LIST[new_bullet.id] = new_bullet;
-		
-	}
-	
-	
+        new_bullet.setMoveDirection(shooting_angle, start_pos);
+        this.BULLET_LIST[new_bullet.id] = new_bullet;
+        
+    }
+    
+    
 }
 
 

@@ -2,23 +2,23 @@ var Vector = require('./Vector');
 var Utils = require('./Utils');
 
 function Player(id) {
-    this.id = id;	
+    this.id = id;   
     this.pos = new Vector(0, 0);
     this.w = 25;
     this.h = 22;
 
     this.name = "USR_" + id;        
     this.lbdisplay = "";
-	
+    
     this.score = 0;
-	this.level = 1;
-	this.ammo = 140;
-	this.hp = 80;
-	this.max_hp = 80;
-	this.max_ammo = 140;
+    this.level = 1;
+    this.ammo = 140;
+    this.hp = 80;
+    this.max_hp = 80;
+    this.max_ammo = 140;
 
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
-	this.tank_moving_speed = 30;//30-80
+    this.tank_moving_speed = 30;//30-80
     this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to
     this.tank_rotating_status = 0; //not rotating, > 0 in rotating; 1 anticlockwise; 2: clockwise
@@ -50,7 +50,7 @@ function Player(id) {
 
     this.is_collided = false;
     this.is_collidedWithOtherTank = false;
-	this.count = 0;
+    this.count = 0;
 }
 
 Player.MAX_LEVEL = 80;
@@ -59,32 +59,32 @@ Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
 
 //min score for the level
 Player.getLevelScore = function (level) {
-	var delta_level = ceil(level/5)*50;
-	var level_core = 50 + ((1 + level%5) * delta_level);
-	return level_core;
-}	
+    var delta_level = ceil(level/5)*50;
+    var level_core = 50 + ((1 + level%5) * delta_level);
+    return level_core;
+}   
 
 
 //awarded score when shoot on target
 Player.getAwarededScore = function (level, isLastOne) {
-	if (isLastOne){
-		return 30 + level * 10;
-	} else {
-		return 12;
-	}
-}	
+    if (isLastOne){
+        return 30 + level * 10;
+    } else {
+        return 12;
+    }
+}   
 
 Player.getMaxHp = function (level){
-	return 80 +(level-1)*15;
+    return 80 +(level-1)*15;
 }
 
 Player.getMaxAmmo = function (level){
-	return 140 +(level-1)*20;
+    return 140 +(level-1)*20;
 }
 
 //level 1-9 shoot 1 bullet, 10 -34: 2 bullet; 35 -79 shoot 3 bullet; 80 shoot 4 bullet
 Player.getShootingStrength = function (level){ 
-	return (level < 10)? 1 : (level < 35)? 2 : (level < 80)? 3 : 4;	
+    return (level < 10)? 1 : (level < 35)? 2 : (level < 80)? 3 : 4; 
 }
 
 
@@ -115,7 +115,7 @@ Player.prototype.changeGunAngle = function (target_angle) {
 
     //this.gun_rotating_status = 1 (anticlockwise); =2 clockwise
     this.gun_rotating_status = (this.gun_angle_to_rotate > 0) ? 1 : 2;
-	
+    
     if (Math.abs(this.gun_angle_to_rotate) < 5) { //too small
         this.gun_angle = target_angle; //set gun angle to target angle
         this.gun_rotating_status = 0;  //mark as finish rotating gun
@@ -131,7 +131,7 @@ Player.prototype.updateGunAngleAndStartingFire = function (delta_time) {
         return 0;
     }
 
-	/*
+    /*
     if (Math.abs(this.gun_angle) > 270) {
         console.log("Error: gun_angle is larger than 270 "+ this.gun_angle);
     }*/
@@ -207,14 +207,14 @@ Player.prototype.setNewDirection = function (new_direction) {
  * then update position of the tank
  */
 
-Player.prototype.updatePosition = function (delta_time) {	
+Player.prototype.updatePosition = function (delta_time) {   
     if (this.tank_angle_to_rotate > 0) { // anticlockwise
         var delta_angle = Math.round(delta_time * this.tank_rotating_speed); // angle has rotated in one frame
 
         this.tank_angle_to_rotate = this.tank_angle_to_rotate - delta_angle; //angle left to final position
         if (this.tank_angle_to_rotate < 5) { //< 5 stop rotate
             this.tank_angle_to_rotate = 0;   //reset angle rotate
-            this.tank_rotating_status = 0;		//don' rotate
+            this.tank_rotating_status = 0;      //don' rotate
         } else {
             this.tank_angle = this.tank_angle + delta_angle; //current angle of tank
         }
@@ -235,8 +235,8 @@ Player.prototype.updatePosition = function (delta_time) {
         return;
     }
 
-	console.log(this.moving_direction +'|' + this.pos.x + ' before update position '+this.pos.y);
-	
+    //console.log(this.moving_direction +'|' + this.pos.x + ' before update position '+this.pos.y);
+    
     if (this.moving_direction == 1) { //x-axis forward
         this.pos.x += this.tank_moving_speed * delta_time;
         this.tank_angle = 0;
@@ -257,11 +257,11 @@ Player.prototype.updatePosition = function (delta_time) {
         this.tank_angle = 90;
     }
 
-		
+        
 }
 //collision happen, adjust the position
 Player.prototype.adjustPosition = function (distance_to_adjust) {
-	console.log(this.moving_direction +'|' + distance_to_adjust);
+    //console.log(this.moving_direction +'|' + distance_to_adjust);
 
     if (this.tank_rotating_status > 0) { //in rotating ==> do nothing
         return;
@@ -303,7 +303,7 @@ Player.prototype.checkCollisionWithMapEdge = function () {
         this.pos.y = 950;
         this.is_collided = true;
     }
-    if (this.is_collided) {
+    if (this.is_collided&&this.type === -1) {// only boot
         this.changeDirection();
     }
 }
@@ -315,8 +315,8 @@ Player.prototype.changeDirection = function () {
 
     this.moving_direction += (Math.random() >= 0.5) ? 1 : -1;
     this.adjustMovingDirection();
-	this.is_collided = false;
-	
+    this.is_collided = false;
+    
 }
 
 
@@ -332,29 +332,29 @@ Player.prototype.adjustMovingDirection = function () {
 
 //check if collision happen, if yes, adjust the position and change the direction
 Player.prototype.checkCollisionWithObstacle = function (obstacle) {
-	
+    
     var dtX = Math.abs(this.pos.x - obstacle.x);
     var dtY = Math.abs(this.pos.y - obstacle.y);
     var kcW = this.w / 2 + obstacle.w / 2;
-    var kcH = this.h / 2 + obstacle.h / 2;	
-	
-	
+    var kcH = this.h / 2 + obstacle.h / 2;  
+    
+    
     if (dtX < kcW && dtY < kcH) {
-		console.log(this.pos.x + ' after update position, before adjust '+this.pos.y);
+        //console.log(this.pos.x + ' after update position, before adjust '+this.pos.y);
         this.is_collided = true;
         if (typeof(this.moving_direction) === "string") {
             this.moving_direction = parseInt(this.moving_direction);
         }
         var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
-		
+        
         this.adjustPosition(overlapDistance);
-		
-		console.log(this.pos.x + ' after adjust'+this.pos.y);
+        
+        //console.log(this.pos.x + ' after adjust'+this.pos.y);
         //only boot automatically change direction 
-		if (this.type === -1){
-			this.changeDirection();	
-		}
-		
+        if (this.type === -1){
+            this.changeDirection(); 
+        }
+        
     }
 }
 
@@ -369,11 +369,11 @@ Player.prototype.checkCollisionWithOtherTank = function (tank) {
         this.is_collided = true;
         var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
         this.adjustPosition(overlapDistance);
-		
-		//only boot automatically change direction 
-		if (this.type === -1){
-			this.changeDirection();
-		}	
+        
+        //only boot automatically change direction 
+        if (this.type === -1){
+            this.changeDirection();
+        }   
         return true;
     } else {
         return false;
@@ -405,47 +405,47 @@ Player.prototype.beShooted = function (shooter_id) {
     if (shooter_id !== null){
         this.is_shooted = true;
         this.shooter_id = shooter_id;
-    }	
-	return (this.hp <= 0) ? true : false;	
+    }   
+    return (this.hp <= 0) ? true : false;   
 }
 
 Player.prototype.fireOnTarget = function (level, is_last_bullet) {
-	//increase the score
-    this.score += Player.getAwarededScore(level, is_last_bullet);	
-	this.adjustLevel();
+    //increase the score
+    this.score += Player.getAwarededScore(level, is_last_bullet);   
+    this.adjustLevel();
 }
 
 //check if the new score enough to gain new level
 Player.prototype.adjustLevel = function () {
-	if (this.score > Player.getLevelScore(this.level+1)){
-		//if yes, adjust
-		this.level++;
-		this.max_ammo = Player.getMaxAmmo(this.level);
-		this.max_hp = Player.getMaxHp(this.level);
-	}
+    if (this.score > Player.getLevelScore(this.level+1)){
+        //if yes, adjust
+        this.level++;
+        this.max_ammo = Player.getMaxAmmo(this.level);
+        this.max_hp = Player.getMaxHp(this.level);
+    }
 }
 
 
 Player.prototype.checkItem = function (item) {
-	if (Utils.distace2Object(item.pos, this.pos) < 10 ){
-		item.is_remove = true;
-		if (item.type === 1 && this.ammo < this.max_ammo){
-			this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;
-		}
-		
-		if (item.type === 2 && this.hp < this.max_hp){
-			this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
-			this.score += Math.round(0.2 * item.value);
-			this.adjustLevel();
-		}			
-	}	
+    if (Utils.distace2Object(item.pos, this.pos) < 10 ){
+        item.is_remove = true;
+        if (item.type === 1 && this.ammo < this.max_ammo){
+            this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;
+        }
+        
+        if (item.type === 2 && this.hp < this.max_hp){
+            this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
+            this.score += Math.round(0.2 * item.value);
+            this.adjustLevel();
+        }           
+    }   
 }
 
 
 
 //get all tanks around one tank to send to client
 Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
-	this.pack_player =[];
+    this.pack_player =[];
     var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
     for (var i=0; i < tank_arr.length; i++){
         var tank = tank_arr[i];
@@ -461,19 +461,19 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             lbdisplay: tank.lbdisplay,
             level: tank.level + "",
             score: tank.score + "",
-			hp: tank.hp + "",
-			ammo: tank.ammo,
+            hp: tank.hp + "",
+            ammo: tank.ammo,
             sp: strspPush,
             gR: tank.gun_angle + ""
         });
     }
      
-	
+    
 }
 
 
 Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
-	this.pack_obs = [];
+    this.pack_obs = [];
     var obstacle_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_obstacle_list);
     
     for (var i=0; i < obstacle_arr.length; i++){
@@ -495,11 +495,11 @@ Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
 
 Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
     var bullet_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_bullet_list);
-	//console.log('around me '+ JSON.stringify(bullet_arr));
+    //console.log('around me '+ JSON.stringify(bullet_arr));
     this.pack_bullet = [];
     for (var i=0; i < bullet_arr.length; i++){
         var bullet = bullet_arr[i];
-		JSON.stringify(bullet);
+        JSON.stringify(bullet);
         this.pack_bullet.push({
             x: Number(bullet.pos.x),
             y: Number(bullet.pos.y),
@@ -519,7 +519,7 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
         this.pack_explosion.push({
             x: Number(explosion.x).toFixed(2) + "",
             y: Number(explosion.y).toFixed(2) + "",
-			gun_angle: explosion.gun_angle + "",
+            gun_angle: explosion.gun_angle + "",
             gun_angle: explosion.gun_angle + ""            
         });
 
@@ -533,10 +533,10 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
     for (var i=0; i < item_arr.length; i++){
         var item = item_arr[i];
         this.pack_item.push({
-			id: item.id +"",
+            id: item.id +"",
             x: Number(item.x).toFixed(2),
             y: Number(item.y).toFixed(2),
-			type: item.type            
+            type: item.type            
         });
 
     }
@@ -544,11 +544,11 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
 }
 
 Player.prototype.resetPackArr = function(){
-	this.pack_explosion = [];
-	this.pack_bullet = [];
-	this.pack_obs = [];
-	this.pack_player = [];
-	this.pack_item = [];
+    this.pack_explosion = [];
+    this.pack_bullet = [];
+    this.pack_obs = [];
+    this.pack_player = [];
+    this.pack_item = [];
 }
 
 module.exports = Player;

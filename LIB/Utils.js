@@ -112,6 +112,55 @@ Utils.putObjectIntoRightZone = function(object, x, y, zone_object_arr){
     }
 }
 
+Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
+	var stop1 = false;
+	var i =0;
+	while (i< 10 && !stop1)	{
+		var angle = Math.random()*Math.PI*2;
+		x2 = x+ Math.cos(angle)*radius;
+		y2 = y+ Math.sin(angle)*radius;	
+		var stop2 = false;
+		var j =0;
+		while (j < tank_arr.length && !stop2){
+			var tank = tank_arr[j];
+			if (Utils.isPointInRetangle(x2, y2, tank.pos.x, tank.pos.y, tank.w, tank.h)){
+				stop1 = true;
+				stop2 = true;
+			} 
+			j++;
+		}
+
+		var stop3 = false;
+		var k =0;
+		while (k < obstacle_arr.length && !stop3){
+			var obstacle = obstacle_arr[k];
+			if (Utils.isPointInRetangle(x2, y2, obstacle.x, obstacle.y, obstacle.w, obstacle.h)){
+				stop1 = true;
+				stop3 = true;
+			} 
+			k++;
+		}		
+		i++;
+	}
+	
+	var pos = null;
+	if (!stop1){
+		pos = {};
+		pos.x =x;
+		pos.y = y;
+	}
+	return pos;
+}
+
+
+Utils.isPointInRetangle =function(x, y, x_rect, y_rect, w, h){
+	var dtX = Math.abs(x - x_rect);
+    var dtY = Math.abs(y - y_rect);
+    var kcW = w / 2;
+    var kcH = h / 2;
+    return (dtX < kcW && dtY < kcH); 
+}
+
 
 Utils.logObject = function (obj) {
     console.log("info :x=%s , y=%s, w=%s, h=%s", obj.x, obj.y, obj.w, obj.h);

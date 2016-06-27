@@ -7,6 +7,7 @@ function AI(id) {
     this.next_count_step = 0;
     this.is_shooted = false;
     this.shooter_id = null;
+	this.last_fire = 0;
 	
 }
 
@@ -16,14 +17,13 @@ AI.prototype.constructor = AI;
 
 
 AI.prototype.setBeginLevel = function () {
-    var beginR = Math.floor(Math.random() * 10) + 1;
-    var hp_max = beginR * 10 + 100;
-
-    this.level = beginR;
+	var beginR = Math.floor(Math.random() * 10) + 1;
+    this.level = beginR;	
+	this.max_hp = Player.getMaxHp(this.level);
+	this.max_ammo = Player.getMaxAmmo(this.level);
     this.tank_moving_speed = 30 + beginR * 2;
-    //this.hp = hp_max - Math.floor(Math.random() * 30);
-	this.hp =10;
-    this.score = Math.floor(Math.random() * 100) + beginR * 5;
+    this.hp = this.max_hp - Math.floor(Math.random() * 50);	
+    this.score = Player.getLevelScore(this.level) + Math.floor(Math.random() * 50);
 }
 
 //change the direction of the AI after next_count_step

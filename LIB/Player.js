@@ -10,10 +10,20 @@ function Player(id) {
     this.name = "USR_" + id;        
     this.lbdisplay = "";
     
-    this.score = 0;
+    
+    this.room_id = null;
+    this.zone_id = 0;
+
+    this.type = 1;// 1 la player binh thuong, -1 la Boot
+	this.setBasicParams();
+}
+
+
+Player.prototype.setBasicParams =function(){
+	this.score = 0;
     this.level = 1;
     this.ammo = 140;
-    this.hp = 80;
+    this.hp = 8000;
     this.max_hp = 80;
     this.max_ammo = 140;
 
@@ -38,20 +48,27 @@ function Player(id) {
     this.gun_rotating_status = -1;
     this.gun_rotating_speed = 300;
 
-    this.room_id = null;
-    this.zone_id = 0;
-
     this.pack_bullet = [];
     this.pack_player = [];
-    this.pack_items = [];
+    this.pack_item = [];
     this.pack_obs = [];
 
     this.type = 1;// 1 la player binh thuong, -1 la Boot
 
     this.is_collided = false;
     this.is_collidedWithOtherTank = false;
-    this.count = 0;
+	this.is_remove = false;
+    
+	this.count = 0;
 }
+
+
+Player.prototype.reset = function (x, y) {
+    this.pos.x = x;
+    this.pos.y = y;
+	this.setBasicParams();
+}
+
 
 Player.MAX_LEVEL = 80;
 
@@ -59,7 +76,7 @@ Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
 
 //min score for the level
 Player.getLevelScore = function (level) {
-    var delta_level = ceil(level/5)*50;
+    var delta_level = Math.ceil(level/5)*50;
     var level_core = 50 + ((1 + level%5) * delta_level);
     return level_core;
 }   
@@ -86,6 +103,7 @@ Player.getMaxAmmo = function (level){
 Player.getShootingStrength = function (level){ 
     return (level < 10)? 1 : (level < 35)? 2 : (level < 80)? 3 : 4; 
 }
+
 
 
 
@@ -306,6 +324,9 @@ Player.prototype.checkCollisionWithMapEdge = function () {
     if (this.is_collided&&this.type === -1) {// only boot
         this.changeDirection();
     }
+	
+	this.is_collided = false;
+	
 }
 
 /*
@@ -315,8 +336,6 @@ Player.prototype.changeDirection = function () {
 
     this.moving_direction += (Math.random() >= 0.5) ? 1 : -1;
     this.adjustMovingDirection();
-    this.is_collided = false;
-    
 }
 
 
@@ -324,6 +343,7 @@ Player.prototype.adjustMovingDirection = function () {
     if (this.moving_direction < 1) {
         this.moving_direction = 4;
     }
+
     if (this.moving_direction > 4) {
         this.moving_direction = 1;
     }
@@ -341,7 +361,6 @@ Player.prototype.checkCollisionWithObstacle = function (obstacle) {
     
     if (dtX < kcW && dtY < kcH) {
         //console.log(this.pos.x + ' after update position, before adjust '+this.pos.y);
-        this.is_collided = true;
         if (typeof(this.moving_direction) === "string") {
             this.moving_direction = parseInt(this.moving_direction);
         }
@@ -354,7 +373,6 @@ Player.prototype.checkCollisionWithObstacle = function (obstacle) {
         if (this.type === -1){
             this.changeDirection(); 
         }
-        
     }
 }
 
@@ -366,7 +384,6 @@ Player.prototype.checkCollisionWithOtherTank = function (tank) {
     var kcW = this.w / 2 + tank.w / 2;
     var kcH = this.h / 2 + tank.h / 2;
     if (dtX < kcW && dtY < kcH) {
-        this.is_collided = true;
         var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
         this.adjustPosition(overlapDistance);
         
@@ -381,17 +398,11 @@ Player.prototype.checkCollisionWithOtherTank = function (tank) {
 }
 
 
-Player.prototype.reset = function (x, y) {
-    this.pos.x = x;
-    this.pos.y = y;
-    this.tank_moving_speed = 80;
-    this.hp = 10;
-    this.is_remove = false;
-}
 
 Player.prototype.reduceHp = function (delta_hp) {
     this.hp = Number(this.hp) - Number(delta_hp);
     this.is_remove = (this.hp <= 0);
+	
 }
 
 
@@ -517,9 +528,9 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
         this.pack_explosion.push({
-            x: Number(explosion.x).toFixed(2) + "",
-            y: Number(explosion.y).toFixed(2) + "",
-            gun_angle: explosion.gun_angle + "",
+            x: Number(explosion.pos.x).toFixed(2) + "",
+            y: Number(explosion.pos.y).toFixed(2) + "",
+            tank_angle: explosion.tank_angle + "",
             gun_angle: explosion.gun_angle + ""            
         });
 
@@ -534,13 +545,12 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
         var item = item_arr[i];
         this.pack_item.push({
             id: item.id +"",
-            x: Number(item.x).toFixed(2),
-            y: Number(item.y).toFixed(2),
+            x: Number(item.pos.x).toFixed(2),
+            y: Number(item.pos.y).toFixed(2),
             type: item.type            
         });
 
-    }
-    
+    }   
 }
 
 Player.prototype.resetPackArr = function(){

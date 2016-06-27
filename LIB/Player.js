@@ -2,21 +2,23 @@ var Vector = require('./Vector');
 var Utils = require('./Utils');
 
 function Player(id) {
-    this.id = id;
-
+    this.id = id;	
     this.pos = new Vector(0, 0);
     this.w = 25;
     this.h = 22;
 
-    this.name = "USR_" + id;
-    this.level = 1;
-    this.hp = 10;
-    this.tank_moving_speed = 30;//30-80
-    this.score = 0;
+    this.name = "USR_" + id;        
     this.lbdisplay = "";
+	
+    this.score = 0;
+	this.level = 1;
+	this.ammo = 140;
+	this.hp = 80;
+	this.max_hp = 80;
+	this.max_ammo = 140;
 
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
-
+	this.tank_moving_speed = 30;//30-80
     this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to
     this.tank_rotating_status = 0; //not rotating, > 0 in rotating; 1 anticlockwise; 2: clockwise
@@ -50,6 +52,42 @@ function Player(id) {
     this.is_collidedWithOtherTank = false;
 	this.count = 0;
 }
+
+Player.MAX_LEVEL = 80;
+
+Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
+
+//min score for the level
+Player.getLevelScore = function (level) {
+	var delta_level = ceil(level/5)*50;
+	var level_core = 50 + ((1 + level%5) * delta_level);
+	return level_core;
+}	
+
+
+//awarded score when shoot on target
+Player.getAwarededScore = function (level, isLastOne) {
+	if (isLastOne){
+		return 30 + level * 10;
+	} else {
+		return 12;
+	}
+}	
+
+Player.getMaxHp = function (level){
+	return 80 +(level-1)*15;
+}
+
+Player.getMaxAmmo = function (level){
+	return 140 +(level-1)*20;
+}
+
+//level 1-9 shoot 1 bullet, 10 -34: 2 bullet; 35 -79 shoot 3 bullet; 80 shoot 4 bullet
+Player.getShootingStrength = function (level){ 
+	return (level < 10)? 1 : (level < 35)? 2 : (level < 80)? 3 : 4;	
+}
+
+
 
 /*
  * Received the target angle, set the gun_angle_to_rotate and set gun_rotating status
@@ -197,6 +235,8 @@ Player.prototype.updatePosition = function (delta_time) {
         return;
     }
 
+	console.log(this.moving_direction +'|' + this.pos.x + ' before update position '+this.pos.y);
+	
     if (this.moving_direction == 1) { //x-axis forward
         this.pos.x += this.tank_moving_speed * delta_time;
         this.tank_angle = 0;
@@ -217,10 +257,11 @@ Player.prototype.updatePosition = function (delta_time) {
         this.tank_angle = 90;
     }
 
+		
 }
 //collision happen, adjust the position
 Player.prototype.adjustPosition = function (distance_to_adjust) {
-
+	console.log(this.moving_direction +'|' + distance_to_adjust);
 
     if (this.tank_rotating_status > 0) { //in rotating ==> do nothing
         return;
@@ -296,15 +337,24 @@ Player.prototype.checkCollisionWithObstacle = function (obstacle) {
     var dtY = Math.abs(this.pos.y - obstacle.y);
     var kcW = this.w / 2 + obstacle.w / 2;
     var kcH = this.h / 2 + obstacle.h / 2;	
+	
+	
     if (dtX < kcW && dtY < kcH) {
+		console.log(this.pos.x + ' after update position, before adjust '+this.pos.y);
         this.is_collided = true;
         if (typeof(this.moving_direction) === "string") {
             this.moving_direction = parseInt(this.moving_direction);
         }
         var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
-
+		
         this.adjustPosition(overlapDistance);
-        this.changeDirection();
+		
+		console.log(this.pos.x + ' after adjust'+this.pos.y);
+        //only boot automatically change direction 
+		if (this.type === -1){
+			this.changeDirection();	
+		}
+		
     }
 }
 
@@ -319,7 +369,11 @@ Player.prototype.checkCollisionWithOtherTank = function (tank) {
         this.is_collided = true;
         var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
         this.adjustPosition(overlapDistance);
-        this.changeDirection();
+		
+		//only boot automatically change direction 
+		if (this.type === -1){
+			this.changeDirection();
+		}	
         return true;
     } else {
         return false;
@@ -340,20 +394,56 @@ Player.prototype.reduceHp = function (delta_hp) {
     this.is_remove = (this.hp <= 0);
 }
 
+
+
+
+//if the is_remove === true ==> do nothing as the tank was died
+// if hp > 0 && hp - delta_hp <  0 ==> last bullet
+// if hp > 0 && hp - delta_hp >  0 ==> normal bullet
 Player.prototype.beShooted = function (shooter_id) {
-    this.reduceHp(1);
+    this.reduceHp(Player.DELTA_HP_REDUCED_BE_SHOOTED);
     if (shooter_id !== null){
         this.is_shooted = true;
         this.shooter_id = shooter_id;
-    }
-	
+    }	
+	return (this.hp <= 0) ? true : false;	
 }
 
-Player.prototype.fireOnTarget = function () {
-    this.score++;
+Player.prototype.fireOnTarget = function (level, is_last_bullet) {
+	//increase the score
+    this.score += Player.getAwarededScore(level, is_last_bullet);	
+	this.adjustLevel();
+}
+
+//check if the new score enough to gain new level
+Player.prototype.adjustLevel = function () {
+	if (this.score > Player.getLevelScore(this.level+1)){
+		//if yes, adjust
+		this.level++;
+		this.max_ammo = Player.getMaxAmmo(this.level);
+		this.max_hp = Player.getMaxHp(this.level);
+	}
 }
 
 
+Player.prototype.checkItem = function (item) {
+	if (Utils.distace2Object(item.pos, this.pos) < 10 ){
+		item.is_remove = true;
+		if (item.type === 1 && this.ammo < this.max_ammo){
+			this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;
+		}
+		
+		if (item.type === 2 && this.hp < this.max_hp){
+			this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
+			this.score += Math.round(0.2 * item.value);
+			this.adjustLevel();
+		}			
+	}	
+}
+
+
+
+//get all tanks around one tank to send to client
 Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
 	this.pack_player =[];
     var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
@@ -371,6 +461,8 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             lbdisplay: tank.lbdisplay,
             level: tank.level + "",
             score: tank.score + "",
+			hp: tank.hp + "",
+			ammo: tank.ammo,
             sp: strspPush,
             gR: tank.gun_angle + ""
         });
@@ -427,8 +519,24 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
         this.pack_explosion.push({
             x: Number(explosion.x).toFixed(2) + "",
             y: Number(explosion.y).toFixed(2) + "",
-            id: explosion.id + "",
-            hp: explosion.hp + ""
+			gun_angle: explosion.gun_angle + "",
+            gun_angle: explosion.gun_angle + ""            
+        });
+
+    }
+    
+}
+
+Player.prototype.updateAllItemsAroundMe = function(full_item_list){
+    var item_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_item_list);
+    this.pack_item = [];
+    for (var i=0; i < item_arr.length; i++){
+        var item = item_arr[i];
+        this.pack_item.push({
+			id: item.id +"",
+            x: Number(item.x).toFixed(2),
+            y: Number(item.y).toFixed(2),
+			type: item.type            
         });
 
     }
@@ -440,6 +548,7 @@ Player.prototype.resetPackArr = function(){
 	this.pack_bullet = [];
 	this.pack_obs = [];
 	this.pack_player = [];
+	this.pack_item = [];
 }
 
 module.exports = Player;

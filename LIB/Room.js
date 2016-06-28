@@ -36,8 +36,9 @@ function Room(id) {
 
 }
 
-Room.MAX_HP_ITEMS = 15;
-Room.MAX_AMMO_ITEMS = 15;
+Room.MAX_HP_ITEMS = 20;
+Room.MAX_AMMO_ITEMS = 20;
+
 
 Room.prototype.loadMapAndAI = function () {
     fs = require('fs')
@@ -108,7 +109,8 @@ Room.prototype.updateFrameStep = function(delta_time) {
     this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
     this.updateAddingAi(delta_time);
-    this.generateRandomItems();
+    
+	//this.generateRandomItems();
 }
 
 
@@ -283,7 +285,7 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
  * Generate items when a tank is killed
 */
 Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
-    return;
+    //return;
 	//console.log('obstacle_arr '+JSON.stringify(obstacle_arr));
     for (i=0; i < tank.level; i++){		
 		
@@ -293,9 +295,16 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
         if (pos !== null){
             var item = new Item(pos.x, pos.y, this.count_item, type);
             this.ITEM_LIST[item.id] = item;
+			console.log('generate item '+item.id);
         }
     }
 }
+
+
+Room.prototype.deleteOldItems = function(){
+	var key_arr = Object.keys(this.ITEM_LIST);	
+}
+
 /*
  * random create items ammo :type=1,health:type=2; limit ammo_cout<40, limit hp_cout<20
 */
@@ -445,6 +454,10 @@ Room.prototype.updateItemsAroundTanks = function(zone_item_arr){
 	for (var item_id in  this.ITEM_LIST){
         var item = this.ITEM_LIST[item_id];
 		//console.log('item '+JSON.stringify(item));
+		if (item.life_time++ > Item.MAX_LIFE_TIME){
+			item.is_remove = true;
+		}
+			
         Utils.putObjectIntoRightZone(item, item.pos.x, item.pos.y, zone_item_arr);  
     }
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank

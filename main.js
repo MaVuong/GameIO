@@ -279,10 +279,10 @@ setInterval(function(){
 		var usr_tmp=SOCKET_LIST[sname];
 		var numbersend=usr_tmp.player.id +"";		
 		
-		
-		// if (usr_tmp.player.pack_item.length > 0){
-		// 	console.log('emit '+JSON.stringify(usr_tmp.player.pack_item));
-		// }
+		/*
+		if (usr_tmp.player.pack_item.length > 0){
+			console.log('emit '+JSON.stringify(usr_tmp.player.pack_item));
+		}*/
 		usr_tmp.emit('UpdatePosition',{
 			numberID:numbersend,
 			tank:usr_tmp.player.pack_player,

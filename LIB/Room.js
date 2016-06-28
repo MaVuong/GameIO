@@ -301,7 +301,7 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
 /*
  * random create items ammo :type=1,health:type=2; limit ammo_cout<40, limit hp_cout<20
 */
-Room.prototype.generateRandomItems = function(tank, tank_arr, obstacle_arr){
+Room.prototype.generateRandomItems = function(){
     var count_ammo=0;
     var count_hp=0;
     for (var key_item in this.ITEM_LIST) {

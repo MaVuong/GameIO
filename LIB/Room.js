@@ -73,7 +73,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
     this.deleteObjectsFromPreviousStep(this.PLAYER_LIST, true);  
 	
 	//delete all item are marked as is_removed = true from previous frame
-    this.deleteObjectsFromPreviousStep(this.ITEM_LIST, true);
+    this.deleteObjectsFromPreviousStep(this.ITEM_LIST, false);
 
 	
 	this.updateItemsAroundTanks(zone_item_arr);

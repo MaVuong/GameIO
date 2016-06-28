@@ -285,7 +285,7 @@ setInterval(function(){
 			obstacbles:usr_tmp.player.pack_obs,
 			bullet:usr_tmp.player.pack_bullet,
 			explosion: usr_tmp.player.pack_explosion,
-			item:[]
+			item:usr_tmp.player.pack_item
 		});
 		
 	}

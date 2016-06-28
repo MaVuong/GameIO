@@ -110,7 +110,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
     this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
     this.updateAddingAi(delta_time);
-
+    this.generateRandomItems();
 }
 
 
@@ -285,6 +285,7 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
  * Generate items when a tank is killed
 */
 Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
+    return;
 	//console.log('obstacle_arr '+JSON.stringify(obstacle_arr));
     for (i=0; i < tank.level; i++){		
 		
@@ -297,8 +298,47 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
         }
     }
 }
+/*
+ * random create items ammo :type=1,health:type=2; limit ammo_cout<40, limit hp_cout<20
+*/
+Room.prototype.generateRandomItems = function(tank, tank_arr, obstacle_arr){
+    var count_ammo=0;
+    var count_hp=0;
+    for (var key_item in this.ITEM_LIST) {
+        var current_item=this.ITEM_LIST[key_item];
+        if (current_item.type===1) {
+            count_ammo++;
+        }else{
+            count_hp++;
+        }
+    }
+    var c=0;
+    if (count_hp<20) {
+        c++;
+    }
+    if (count_ammo<40) {
+        c++;
+    }
+    var free_zone_cout=this.FREE_ZONE_LIST.length;
+    for (var i = 0; i < c; i++) {// c min=1,max=2;
+        this.count_item ++;
 
+        var i_type=i+1;
+        var random_index= Math.floor(Math.random() * free_zone_cout);
+        var rect_tmp=this.FREE_ZONE_LIST[random_index];
+        var acx=rect_tmp.x-rect_tmp.w/2;
+        var acy=rect_tmp.y-rect_tmp.h/2;
 
+        var xpos=Math.floor(Math.random() * rect_tmp.w);
+        var ypos=Math.floor(Math.random() * rect_tmp.h);
+        xpos=xpos+acx;
+        ypos=ypos+acy;
+        var itm_add=new  Item(xpos, ypos, this.count_item, i_type);
+        //console.log('around me '+ JSON.stringify(bullet_arr));
+        //console.log("add new item:(index:%s rect_tmp:%s %s %s %s) (%s %s %s  %s)",random_index,rect_tmp.x,rect_tmp.y,rect_tmp.w,rect_tmp.h,xpos, ypos, this.count_item, i_type);
+        this.ITEM_LIST[itm_add.id] = itm_add;
+    }
+}
 
 /*
  * check collision with other tanks,
@@ -406,7 +446,7 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr){
 Room.prototype.updateItemsAroundTanks = function(zone_item_arr){
 	for (var item_id in  this.ITEM_LIST){
         var item = this.ITEM_LIST[item_id];
-		console.log('item '+JSON.stringify(item));
+		//console.log('item '+JSON.stringify(item));
         Utils.putObjectIntoRightZone(item, item.pos.x, item.pos.y, zone_item_arr);  
     }
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank

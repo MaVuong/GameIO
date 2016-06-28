@@ -545,8 +545,8 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
         var item = item_arr[i];
         this.pack_item.push({
             id: item.id +"",
-            x: Number(item.pos.x).toFixed(2),
-            y: Number(item.pos.y).toFixed(2),
+            x: item.pos.x,
+            y: item.pos.y,
             type: item.type            
         });
 

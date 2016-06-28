@@ -461,13 +461,11 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
         var tank = this.PLAYER_LIST[tankid];
         var fire_status = tank.updateGunAngleAndStartingFire(delta_time);
         if (fire_status === 1) {
-            if (tank.ammo <= 0) {
+            if (tank.ammo<=0) {
                 return;
             }
-            tank.ammo -= 1;
+            tank.ammo-=1;
             this.createNewBullets(tank);
-			tank.last_fire = new Date().getTime();
-			
         }
     }
 }
@@ -486,9 +484,10 @@ Room.prototype.updateAi = function (zone_tank_arr) {
     for (var key in this.PLAYER_LIST) {
         if (key < 0) {
             var boot = this.PLAYER_LIST[key];
-            boot.updateState();			
-            var can_fire = Date.now() - boot.last_fire > 500;
-            if (boot.is_shooted && boot.shooter_id !== 0) { 				
+            boot.updateState();
+
+            var can_fire = Date.now() - boot.last_fire < 300;
+            if (boot.is_shooted && boot.shooter_id !== 0) {                
                 if (can_fire && this.PLAYER_LIST.hasOwnProperty(boot.shooter_id)) {
                     var target = this.PLAYER_LIST[boot.shooter_id];
                     boot.shootTarget(target);

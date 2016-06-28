@@ -54,8 +54,7 @@ Room.prototype.loadMapAndAI = function () {
 Room.prototype.updateFrameStep = function(delta_time) {
 
     var zone_tank_arr = [];//array of zones, each zone is array of tanks
-    var zone_bullet_arr = []; //array of zones, each zone is array of bullets
-    var zone_item_arr = [];
+    var zone_bullet_arr = []; //array of zones, each zone is array of bullets    
     var zone_explosion_arr = [];//array of zones, each zone is array of explosions
     var zone_item_arr = [];//array of zones, each zone is array of items
 
@@ -64,32 +63,31 @@ Room.prototype.updateFrameStep = function(delta_time) {
         zone_tank_arr.push([]); //zone_tank_arr[[],[],[] ....,[]]
         zone_bullet_arr.push([]);
         zone_item_arr.push([]);
-        zone_explosion_arr.push([]);
-        zone_item_arr.push([]);
+        zone_explosion_arr.push([]);        
     }
 
     //delete all bullet are marked as is_remove from previous frame
     this.deleteObjectsFromPreviousStep(this.BULLET_LIST, false);
 
     //delete all tanks are marked as is_removed = true from previous frame
-    this.deleteObjectsFromPreviousStep(this.PLAYER_LIST, true);
-    
+    this.deleteObjectsFromPreviousStep(this.PLAYER_LIST, true);  
+	
+	//delete all item are marked as is_removed = true from previous frame
+    this.deleteObjectsFromPreviousStep(this.ITEM_LIST, true);
+
+	
 	this.updateItemsAroundTanks(zone_item_arr);
 	
     //update all explosion around me, explosion is calculated from previous frame, need to delete before calculate new explosions
     this.updateExplosionsAroundTanks(zone_explosion_arr);
 
     //reset to calculate new explosions
+	this.EXPLOSION_LIST = [];
     zone_explosion_arr = [];	
     for (var i = 0; i < 100; i++) {
         zone_explosion_arr.push([]);
     }
-
-	zone_item_arr = [];	
-    for (var i = 0; i < 100; i++) {
-        zone_item_arr.push([]);
-    }
-    
+   
     //update tank positions and push tanks into their right zones
     this.updateObjectPositionAndPushIntoRightZone(this.PLAYER_LIST, zone_tank_arr, delta_time);
     

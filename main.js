@@ -293,4 +293,4 @@ setInterval(function(){
 		});
 		
 	}
-},60);
+},40);

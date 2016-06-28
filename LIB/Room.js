@@ -463,6 +463,10 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
         var tank = this.PLAYER_LIST[tankid];
         var fire_status = tank.updateGunAngleAndStartingFire(delta_time);
         if (fire_status === 1) {
+            if (tank.ammo<=0) {
+                return;
+            }
+            tank.ammo-=1;
             this.createNewBullets(tank);
         }
     }
@@ -595,13 +599,15 @@ Room.prototype.createNewBullets = function (tank) {
         }
         
         //delta angle between bullets: 0.5 
-        var delta = (i % 2 === 0) ? 0.5* i : -0.5*i;
+        var delta =0;// = (i % 2 === 0) ? 0.5* i : -0.5*i;
         var shooting_angle =  tank.gun_angle + delta;
-        
-        var xbegin = tank.pos.x;
-        var ybegin = tank.pos.y;
+        var shooting_angle_radian=shooting_angle*3.141592653589/180;
+        var xbegin = tank.pos.x+20*Math.cos(shooting_angle_radian);
+        var ybegin = tank.pos.y+20*Math.sin(shooting_angle_radian);
         var start_pos = new Vector(xbegin, ybegin);
         var new_bullet = new Bullet(tank.id, this.count_bullet);
+
+
 
         new_bullet.setMoveDirection(shooting_angle, start_pos);
         this.BULLET_LIST[new_bullet.id] = new_bullet;

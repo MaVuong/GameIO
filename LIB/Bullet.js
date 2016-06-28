@@ -12,6 +12,7 @@ function Bullet(player_id, bullet_id) {
     this.opacity = 1;
     this.is_remove = false;
     this.zone_id = 0;
+    this.skipFristFrame=true;
 }
 
 //set move direction: pos + angle (in degree)
@@ -24,7 +25,10 @@ Bullet.prototype.setMoveDirection = function (angle, begin_pos) {
 Bullet.prototype.updatePosition = function (delta_time) {	
 
     if (this.is_remove) {return; }
-
+    if (this.skipFristFrame) {
+        this.skipFristFrame=false;
+        return;
+    }
     var delta_distance = delta_time * this.speed; //canh huyen
     this.moved_length = this.moved_length + delta_distance; //moved distance
     this.pos.x = Math.round(this.pos.x + delta_distance * Math.cos(this.angle));

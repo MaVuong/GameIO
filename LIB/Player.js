@@ -473,7 +473,7 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             level: tank.level + "",
             score: tank.score + "",
             hp: tank.hp + "",
-            ammo: tank.ammo,
+            ammo: tank.ammo+"",
             sp: strspPush,
             gR: tank.gun_angle + ""
         });
@@ -528,10 +528,10 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
         this.pack_explosion.push({
-            x: Number(explosion.pos.x).toFixed(2) + "",
-            y: Number(explosion.pos.y).toFixed(2) + "",
-            tank_angle: explosion.tank_angle + "",
-            gun_angle: explosion.gun_angle + ""            
+            x: explosion.pos.x ,
+            y: explosion.pos.y,
+            tank_angle: explosion.tank_angle ,
+            gun_angle: explosion.gun_angle          
         });
 
     }

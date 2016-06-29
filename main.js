@@ -111,7 +111,8 @@ io.on('connection', function(socket){
 
 			var room_id=null;
 			for(var key  in ROOM_LIST){
-				if (ROOM_LIST[key].countUser < 100) {// user limit =100
+				console.log("ROOM_LIST[key].countUser: %s",ROOM_LIST[key].getEstablishedSocket());
+				if (ROOM_LIST[key].getEstablishedSocket() < 100) {// user limit =100
 					room_id=key;
 					break;
 				}

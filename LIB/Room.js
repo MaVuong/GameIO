@@ -34,6 +34,7 @@ function Room(id) {
     this.last_post_tank_added = null; //store last position the tank added
     this.ai_added = false; //indicate if the ai are added or not
 
+    this.countUser=0;
 }
 
 Room.MAX_HP_ITEMS = 20;

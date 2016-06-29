@@ -102,14 +102,17 @@ Room.prototype.updateFrameStep = function(delta_time) {
     //check collision between tanks, update the explosion list
     this.checkCollisionOfTanks(zone_tank_arr, zone_item_arr);
 
-    //update gun angle and fire when finish rotate the gun
-    this.updateGunAngleAndFire(delta_time);
+    
 
     this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr);
 
     this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
     this.updateAddingAi(delta_time);
+
+
+    //update gun angle and fire when finish rotate the gun
+    this.updateGunAngleAndFire(delta_time);
     
 	//this.generateRandomItems();
 }
@@ -602,30 +605,85 @@ Room.prototype.getFreePos = function () {
 }
 
 
-Room.prototype.createNewBullets = function (tank) {
-    var shooting_streng = Player.getShootingStrength(tank.level);
-    for (var i =0; i < shooting_streng; i++){
-        this.count_bullet++;    
-        if (this.count_bullet > 1000000) {
-            this.count_bullet = 1;
-        }
+Room.prototype.createNewBullets = function (tankfire) {
+    // var shooting_streng = Player.getShootingStrength(tank.level);
+    // for (var i =0; i < shooting_streng; i++){
+    //     this.count_bullet++;    
+    //     if (this.count_bullet > 1000000) {
+    //         this.count_bullet = 1;
+    //     }
         
-        //delta angle between bullets: 0.5 
-        var delta =0;// = (i % 2 === 0) ? 0.5* i : -0.5*i;
-        var shooting_angle =  tank.gun_angle + delta;
-        var shooting_angle_radian=shooting_angle*3.141592653589/180;
-        var xbegin = tank.pos.x+20*Math.cos(shooting_angle_radian);
-        var ybegin = tank.pos.y+20*Math.sin(shooting_angle_radian);
-        var start_pos = new Vector(xbegin, ybegin);
-        var new_bullet = new Bullet(tank.id, this.count_bullet);
+    //     //delta angle between bullets: 0.5 
+    //     var delta =0;// = (i % 2 === 0) ? 0.5* i : -0.5*i;
+    //     var shooting_angle =  tank.gun_angle + delta;
+    //     var shooting_angle_radian=shooting_angle*3.141592653589/180;
+    //     var xbegin = tank.pos.x+20*Math.cos(shooting_angle_radian);
+    //     var ybegin = tank.pos.y+20*Math.sin(shooting_angle_radian);
+    //     var start_pos = new Vector(xbegin, ybegin);
+    //     var new_bullet = new Bullet(tank.id, this.count_bullet);
 
 
 
-        new_bullet.setMoveDirection(shooting_angle, start_pos);
-        this.BULLET_LIST[new_bullet.id] = new_bullet;
+    //     new_bullet.setMoveDirection(shooting_angle, start_pos);
+    //     this.BULLET_LIST[new_bullet.id] = new_bullet;
         
-    }
+    // }
     
+    var g_angle=tankfire.gun_angle;
+    
+
+    var xt=0;
+    var yt=0;
+    if (tankfire.moving_direction==1) {
+        xt=tankfire.dtmove;
+    }
+    if (tankfire.moving_direction==3) {
+        xt=-tankfire.dtmove;
+    }
+    if (tankfire.moving_direction==2) {
+        yt=tankfire.dtmove;
+    }
+    if (tankfire.moving_direction==4) {
+        yt=-tankfire.dtmove;
+    }
+
+    var shooting_streng = Player.getShootingStrength(tankfire.level);
+    var dt_angle=g_angle;
+    var dt_ag=0;
+    if (shooting_streng===2) {
+        dt_angle=dt_angle-3;
+        dt_ag=6;
+    }
+    if (shooting_streng===3) {
+        dt_angle=dt_angle-4;
+        dt_ag=4;
+    }
+    if (shooting_streng===4) {
+        dt_angle=dt_angle-12;
+        dt_ag=6;
+    }
+    for (var i =0; i < shooting_streng; i++){
+        this.count_bullet++;
+        if (this.count_bullet>1000000) {
+            this.count_bullet=1;
+        }
+        var gocban=dt_angle+i*dt_ag;
+        if (gocban>360) {
+            gocban=gocban-360;
+        }else if (gocban<0) {
+            gocban=360+gocban;
+        }
+        var gocdg=gocban*3.141592653589/180; 
+        var xbegin=tankfire.pos.x+23*Math.cos(gocdg)+xt;
+        var ybegin=tankfire.pos.y+23*Math.sin(gocdg)+yt;
+
+        var diembanbandau=new Vector(xbegin,ybegin);
+        var new_bullet=new Bullet(tankfire.id,this.count_bullet);
+        
+        new_bullet.setMoveDirection(gocban,diembanbandau);
+        this.BULLET_LIST[new_bullet.id]=new_bullet;
+    }
+
     
 }
 

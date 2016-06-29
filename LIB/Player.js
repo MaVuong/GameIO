@@ -21,7 +21,7 @@ function Player(id) {
 
 Player.prototype.setBasicParams =function(){
 	this.score = 0;
-    this.level = 1;
+    this.level = 14;
     this.ammo = 140;
     this.hp = 8000;
     this.max_hp = 80;
@@ -60,6 +60,9 @@ Player.prototype.setBasicParams =function(){
 	this.is_remove = false;
     
 	this.count = 0;
+
+    this.dtmove=0;
+    this.isFire=false;
 }
 
 
@@ -254,7 +257,7 @@ Player.prototype.updatePosition = function (delta_time) {
     }
 
     //console.log(this.moving_direction +'|' + this.pos.x + ' before update position '+this.pos.y);
-    
+    this.dtmove=this.tank_moving_speed * delta_time;
     if (this.moving_direction == 1) { //x-axis forward
         this.pos.x += this.tank_moving_speed * delta_time;
         this.tank_angle = 0;
@@ -284,7 +287,7 @@ Player.prototype.adjustPosition = function (distance_to_adjust) {
     if (this.tank_rotating_status > 0) { //in rotating ==> do nothing
         return;
     }
-
+    this.dtmove=0;
     if (this.moving_direction === 1) { //x-asis forward
         this.pos.x -= distance_to_adjust;
     }
@@ -306,6 +309,7 @@ Player.prototype.adjustPosition = function (distance_to_adjust) {
  * If yes, adjust the position and change direction
  */
 Player.prototype.checkCollisionWithMapEdge = function () {
+    this.is_collided = false;
     if (this.pos.x < -1450) {
         this.pos.x = -1450;
         this.is_collided = true;
@@ -320,6 +324,9 @@ Player.prototype.checkCollisionWithMapEdge = function () {
     } else if (this.pos.y > 950) {
         this.pos.y = 950;
         this.is_collided = true;
+    }
+    if (this.is_collided) {
+        this.dtmove=0;
     }
     if (this.is_collided&&this.type === -1) {// only boot
         this.changeDirection();
@@ -473,6 +480,7 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             level: tank.level + "",
             score: tank.score + "",
             hp: tank.hp + "",
+            //isfire:tank.isFire,
             ammo: tank.ammo+"",
             sp: strspPush,
             gR: tank.gun_angle + ""

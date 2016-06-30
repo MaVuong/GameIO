@@ -188,6 +188,9 @@ Player.prototype.updateGunAngleAndStartingFire = function (delta_time) {
 
     if (this.gun_rotating_status == 0) { //=0 fire, =-1 do nothing, =1, 2 continute to rotate in anti and clockwise
         this.gun_rotating_status = -1;
+		if (this.type === -1){
+			this.last_fire = Date.now();
+		}		
         return 1; //indicate starting fire
     } else {
         return 0; //do nothing

@@ -30,16 +30,18 @@ function Room(id) {
     this.ai_id = -1; //starting id of ai
     this.ai_add_interval = 0;
     this.last_post_tank_added = null; //store last position the tank added
-    this.ai_added = false; //indicate if the ai are added or not
 
     this.count_real_user=0;
 	this.count_boot=0;
+	
+	this.first_time_add_ai = true;
 }
 
 Room.MAX_HP_ITEMS = 20;
 Room.MAX_AMMO_ITEMS = 20;
 Room.ITEM_RADIUS = 80;
 Room.MIN_DISTANCE_BETWEEN_PLAYERS = 150;
+Room.MAX_PLAYER = 40;
 
 
 Room.prototype.loadMapAndAI = function () {
@@ -178,18 +180,19 @@ Room.prototype.addingAi = function() {
         return;
     }
     
-	var countAddAI = 20;
-     if (player_number > 30) {
-		countAddAI = 2;
-     } else if (player_number > 20  && player_number <= 30) {
-		countAddAI = 3;
-     } else if (player_number > 10 && player_number <= 20) {
-		countAddAI = 4;
-     }
+	var countAddAI = (this.first_time_add_ai) ? 10 : 0;	
+	
+	if (!this.first_time_add_ai){
+		var available_slots = Room.MAX_PLAYER - (this.count_real_user + this.count_boot);
+		if (available_slots > 0){
+			var temp = Math.ceil(available_slots * Math.random());
+			countAddAI = temp < 5 ? temp : 5;			
+		}
+	
+	}
 
-    
-    for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
-        var pos = this.getFreePos();        
+		for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
+			var pos = this.getFreePos();        
             this.ai_id= this.ai_id - 1;
             if (this.ai_id < -1000000) {
                 this.ai_id = -1;
@@ -202,8 +205,10 @@ Room.prototype.addingAi = function() {
             console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
             this.PLAYER_LIST[this.ai_id] = ai;
         this.count_boot++;
-    }
-    this.ai_added = true;
+		}
+	
+
+    
 }
 
 
@@ -515,7 +520,7 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
         var tank = this.PLAYER_LIST[tankid];
         var fire_status = tank.updateGunAngleAndStartingFire(delta_time);
         if (fire_status === 1) {
-            if (tank.ammo<=0) {
+            if (tank.ammo <= 0) {
                 return;
             }
             tank.ammo-=1;
@@ -527,11 +532,18 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
 
 Room.prototype.updateAddingAi =function(delta_time) {
     this.ai_add_interval = this.ai_add_interval + delta_time;
-
-    if (this.ai_add_interval > 2 && !this.ai_added) { //2 second call add ai
-        this.ai_add_interval = 0;
-        this.addingAi();
-    }
+	if (this.first_time_add_ai){
+		if (this.ai_add_interval > 2){
+			this.addingAi();
+			this.ai_add_interval = 0;
+			this.first_time_add_ai = false;
+		} 		
+	} else {
+		if (this.ai_add_interval > 5) {			
+		        this.addingAi();
+				this.ai_add_interval = 0;
+		}
+	}
 }
 
 Room.prototype.updateAi = function (zone_tank_arr) {

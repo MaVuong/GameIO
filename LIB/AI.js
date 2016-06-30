@@ -18,7 +18,7 @@ AI.prototype = Object.create(Player.prototype);
 AI.prototype.constructor = AI;
 
 //Constant
-AI.SHOOTING_DURATION = 100;
+AI.SHOOTING_DURATION = 300;
 
 
 AI.prototype.setBeginLevel = function () {

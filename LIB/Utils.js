@@ -151,12 +151,16 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 	}
 	
 	var pos = null;
-	if (!stop1){
+	if (!stop1 && isPointInMap(x2, y2)){
 		pos = {};
 		pos.x =x2;
 		pos.y = y2;
 	}
 	return pos;
+}
+
+function isPointInMap(x, y){
+	return (x < 1500 && x > -1500 && y > -1000 && y < 1000);
 }
 
 

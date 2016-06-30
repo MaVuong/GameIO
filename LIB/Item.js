@@ -11,6 +11,6 @@ function Item(x, y, id, type) {
 	this.life_time = 0;
 }
 
-Item.MAX_LIFE_TIME = 250; //250 frame = 10s
+Item.MAX_LIFE_TIME = 500; //250 frame = 10s
 
 module.exports = Item;

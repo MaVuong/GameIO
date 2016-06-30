@@ -28,7 +28,7 @@ Player.prototype.setBasicParams =function(){
     this.max_ammo = 140;
 
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
-    this.tank_moving_speed = 30;//30-80
+    this.tank_moving_speed = 50;//30-80
     this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to
     this.tank_rotating_status = 0; //not rotating, > 0 in rotating; 1 anticlockwise; 2: clockwise
@@ -290,11 +290,9 @@ Player.prototype.updatePosition = function (delta_time) {
         this.tank_angle = 90;
     }
 	
-		if (this.pos.x > 3000 || this.pos.y > 3000){
-			console.log("in player update position, this.pos.x=%s this.pos.y=%s ", this.pos.x, this.pos.y);    
-			console.log("in player update position, type of x " + typeof(this.pos.x) +" | y "+ typeof(this.pos.y) );    
-		}
-			
+	if (this.type === 1){
+		console.log(this.tank_moving_speed);
+	}
 }
 
 //collision happen, adjust the position
@@ -447,7 +445,10 @@ Player.prototype.beShooted = function (shooter_id) {
 Player.prototype.fireOnTarget = function (level, is_last_bullet) {
     //increase the score
     this.score += Player.getAwarededScore(level, is_last_bullet);   
-    this.adjustLevel();
+	if (this.type === 1){ //only adjust level of real user
+		this.adjustLevel();	
+	}
+    
 }
 
 //check if the new score enough to gain new level
@@ -471,7 +472,9 @@ Player.prototype.checkItem = function (item) {
         if (item.type === 2 && this.hp < this.max_hp){
             this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
             this.score += Math.round(0.2 * item.value);
-            this.adjustLevel();
+			if (this.type === 1){ //only adjust level of real user
+				this.adjustLevel();
+			}
         }           
     }   
 }

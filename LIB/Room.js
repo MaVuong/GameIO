@@ -160,7 +160,6 @@ Room.prototype.addPlayer = function (player) {
     Utils.logObject(free_pos);// luu y: do luoi ve o client luon luon la boi so cua df_cell_draw_width=20 nen o day vi tri x,y cung phai la boi so cua 20
     player.pos.x = Number(free_pos.x);
     player.pos.y = Number(free_pos.y);
-    player.tank_moving_speed = 80;
 
     this.last_post_tank_added = free_pos; //store last position the tank added
 	this.count_real_user++;
@@ -313,7 +312,7 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
                     var shooter_id = null;
                     if (this.PLAYER_LIST.hasOwnProperty(bullet.player_id)) {
                         var shooter = this.PLAYER_LIST[bullet.player_id];
-                        shooter_id = shooter.id;
+                        tank.shooter_id = shooter.id;
                         shooter.fireOnTarget(tank.level, is_last_bullet); //award the shooter
                     }                   
                 }
@@ -542,10 +541,9 @@ Room.prototype.updateAi = function (zone_tank_arr) {
             boot.updateState();
 
             var can_fire = Date.now() - boot.last_fire > AI.SHOOTING_DURATION;			
-            if (boot.is_shooted && boot.shooter_id !== 0) {
-	
-                if (can_fire && this.PLAYER_LIST.hasOwnProperty(boot.shooter_id)) {
-                    var target = this.PLAYER_LIST[boot.shooter_id];
+            if (boot.is_shooted && boot.shooter_id !== 0) {				
+                if (can_fire && this.PLAYER_LIST.hasOwnProperty(boot.shooter_id)) {					
+                    var target = this.PLAYER_LIST[boot.shooter_id];					
                     boot.shootTarget(target);
                 }
                 boot.is_shooted = false;

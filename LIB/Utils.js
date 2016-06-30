@@ -66,13 +66,17 @@ Utils.distace2Object = function (obj1, obj2) {
     Utils.posToZoneIndex = function (x, y) {
         var cv_x = Number(x) + 1500;
         var cv_y = Number(y) + 1000;
-
+		
+		if (x > 3000 || y > 3000)
+			console.log("convert to Unit error, xp=%s yp=%s", x, y);
         // map size 3000 x 2000
         var xp = Math.floor(cv_x / 300); //x-index
         var yp = Math.floor(cv_y / 200); //y-index
+		
         var index = Math.floor(yp * 10 + xp); //zone-index
         if (index > 99 || xp > 9 || yp > 9 || index < 0) {
-            console.log("convert to Unit error, xp=%s yp=%s index=%s", xp, yp, index);
+			
+            //console.log("convert to Unit error, xp=%s yp=%s index=%s", xp, yp, index);
             return -1;
         } else {
             return index;
@@ -105,6 +109,7 @@ Utils.getAllObjectsAroundMe = function (zone_index, full_object_arr) {
 
 
 Utils.putObjectIntoRightZone = function(object, x, y, zone_object_arr){
+	
     var zone_index = Utils.posToZoneIndex(x, y);
     object.zone_id = zone_index;
     if (zone_index >= 0) {

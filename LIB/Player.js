@@ -21,7 +21,7 @@ function Player(id) {
 
 Player.prototype.setBasicParams =function(){
 	this.score = 0;
-    this.level = 14;
+    this.level = 1;
     this.ammo = 140;
     this.hp = 80;
     this.max_hp = 80;
@@ -257,29 +257,46 @@ Player.prototype.updatePosition = function (delta_time) {
     }
 
     //console.log(this.moving_direction +'|' + this.pos.x + ' before update position '+this.pos.y);
-    this.dtmove=this.tank_moving_speed * delta_time;
-    if (this.moving_direction == 1) { //x-axis forward
-        this.pos.x += this.tank_moving_speed * delta_time;
-        this.tank_angle = 0;
-    }
-    else if (this.moving_direction == 2) //y-axis forward
-    {
-        this.pos.y += this.tank_moving_speed * delta_time;
-        this.tank_angle = 90;
-    }
-    else if (this.moving_direction == 3) //x-axis backward
-    {
-        this.pos.x -= this.tank_moving_speed * delta_time;
-        this.tank_angle = 0;
-    }
-    else if (this.moving_direction == 4) //y-axis backward
-    {
-        this.pos.y -= this.tank_moving_speed * delta_time;
-        this.tank_angle = 90;
-    }
+    
+	this.dtmove=this.tank_moving_speed * delta_time;
 
-        
+		//need to find reason why x/y was converted to string
+		if (typeof(this.pos.x) === "string"){
+			this.pos.x = Number(this.pos.x);
+		}
+		
+		if (typeof(this.pos.y) === "string"){
+			this.pos.y = Number(this.pos.y);
+		}
+	
+	
+    if (this.moving_direction === 1) { //x-axis forward
+        this.pos.x += Number(this.tank_moving_speed * delta_time);
+        this.tank_angle = 0;
+    }
+    else if (this.moving_direction === 2) //y-axis forward
+    {
+        this.pos.y += Number(this.tank_moving_speed * delta_time);
+        this.tank_angle = 90;
+    }
+    else if (this.moving_direction === 3) //x-axis backward
+    {
+        this.pos.x -= Number(this.tank_moving_speed * delta_time);
+        this.tank_angle = 0;
+    }
+    else if (this.moving_direction === 4) //y-axis backward
+    {
+        this.pos.y -= Number(this.tank_moving_speed * delta_time);
+        this.tank_angle = 90;
+    }
+	
+		if (this.pos.x > 3000 || this.pos.y > 3000){
+			console.log("in player update position, this.pos.x=%s this.pos.y=%s ", this.pos.x, this.pos.y);    
+			console.log("in player update position, type of x " + typeof(this.pos.x) +" | y "+ typeof(this.pos.y) );    
+		}
+			
 }
+
 //collision happen, adjust the position
 Player.prototype.adjustPosition = function (distance_to_adjust) {
     //console.log(this.moving_direction +'|' + distance_to_adjust);

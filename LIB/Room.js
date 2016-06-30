@@ -172,18 +172,19 @@ Room.prototype.addPlayer = function (player) {
 
 
 Room.prototype.addingAi = function() {
-    //return;
+    
 
     var player_number = this.getPlayerNumber();
     if (player_number > 40 || player_number == 0) {
         return;
     }
     
+	var countAddAI = 20;
      if (player_number > 30) {
 		countAddAI = 2;
-     } else if (countAddAI > 20) {
+     } else if (player_number > 20  && player_number <= 30) {
 		countAddAI = 3;
-     } else if (countAddAI > 10) {
+     } else if (player_number > 10 && player_number <= 20) {
 		countAddAI = 4;
      }
 
@@ -262,7 +263,6 @@ Room.prototype.updateObjectPositionAndPushIntoRightZone = function(object_arr, z
     for (var key  in object_arr) {
 
         var obj = object_arr[key];
-
         //update position before push into right zone
         obj.updatePosition(delta_time);
         Utils.putObjectIntoRightZone(obj, obj.pos.x, obj.pos.y, zone_object_arr);
@@ -541,8 +541,9 @@ Room.prototype.updateAi = function (zone_tank_arr) {
             var boot = this.PLAYER_LIST[key];
             boot.updateState();
 
-            var can_fire = Date.now() - boot.last_fire < AI.SHOOTING_DURATION;
-            if (boot.is_shooted && boot.shooter_id !== 0) {                
+            var can_fire = Date.now() - boot.last_fire > AI.SHOOTING_DURATION;			
+            if (boot.is_shooted && boot.shooter_id !== 0) {
+	
                 if (can_fire && this.PLAYER_LIST.hasOwnProperty(boot.shooter_id)) {
                     var target = this.PLAYER_LIST[boot.shooter_id];
                     boot.shootTarget(target);
@@ -551,7 +552,9 @@ Room.prototype.updateAi = function (zone_tank_arr) {
                 boot.shooter_id = 0;
                 boot.changeDirection();
             } else {
+				
                 if (can_fire){
+					
                     var tank_arr = this.getAllTanksAroundMe(boot.zone_id, zone_tank_arr);
                     var obstacle_arr = this.getAllObstaclesAroundMe(boot.zone_id);
                     boot.shootClosestTank(tank_arr, obstacle_arr);                  
@@ -566,7 +569,8 @@ Room.prototype.updateAi = function (zone_tank_arr) {
 Room.prototype.getFreePos = function () {
 
     var free_pos_number = this.FREE_POSITION_LIST.length;
-    var rd = 0;    
+    var rd = 0;  
+	var demw = 10;	
     while (demw > 0) {
         var rd = Math.floor(Math.random() * free_pos_number);
         if (rd >= free_pos_number) {
@@ -589,7 +593,8 @@ Room.prototype.getFreePos = function () {
     }
 	
 	//could not find a safe pos, return random pos		
-    return this.FREE_POSITION_LIST[rd];;
+	console.log(this.FREE_POSITION_LIST[rd].x + '|'+this.FREE_POSITION_LIST[rd].y)
+    return this.FREE_POSITION_LIST[rd];
 }
 
 

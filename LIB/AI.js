@@ -26,7 +26,7 @@ AI.prototype.setBeginLevel = function () {
     this.level = beginR;	
 	this.max_hp = Player.getMaxHp(this.level);
 	this.max_ammo = Player.getMaxAmmo(this.level);
-    this.tank_moving_speed = 30 + beginR * 2;
+    this.tank_moving_speed = 40 + beginR * 2;
     this.hp = this.max_hp - Math.floor(Math.random() * 50);	
     this.score = Player.getLevelScore(this.level) + Math.floor(Math.random() * 50);
 }

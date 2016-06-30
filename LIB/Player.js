@@ -23,7 +23,7 @@ Player.prototype.setBasicParams =function(){
 	this.score = 0;
     this.level = 14;
     this.ammo = 140;
-    this.hp = 8000;
+    this.hp = 80;
     this.max_hp = 80;
     this.max_ammo = 140;
 

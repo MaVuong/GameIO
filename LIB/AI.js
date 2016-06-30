@@ -8,12 +8,17 @@ function AI(id) {
     this.is_shooted = false;
     this.shooter_id = null;
 	this.last_fire = 0;
+	this.type = -1;
 	
 }
+
 
 //inheritance
 AI.prototype = Object.create(Player.prototype);
 AI.prototype.constructor = AI;
+
+//Constant
+AI.SHOOTING_DURATION = 100;
 
 
 AI.prototype.setBeginLevel = function () {

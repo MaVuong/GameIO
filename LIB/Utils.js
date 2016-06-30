@@ -115,6 +115,8 @@ Utils.putObjectIntoRightZone = function(object, x, y, zone_object_arr){
 Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 	var stop1 = false;
 	var i =0;
+	var x2 = x;
+	var y2 = y;
 	while (i< 10 && !stop1)	{
 		var angle = Math.random()*Math.PI*2;
 		x2 = x+ Math.cos(angle)*radius;
@@ -146,8 +148,8 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 	var pos = null;
 	if (!stop1){
 		pos = {};
-		pos.x =x;
-		pos.y = y;
+		pos.x =x2;
+		pos.y = y2;
 	}
 	return pos;
 }

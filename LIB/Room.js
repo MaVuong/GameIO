@@ -26,19 +26,20 @@ function Room(id) {
     
     this.ZONE_LIST = null;  //array of zones, each zone is an array of obstacles
     this.FREE_POSITION_LIST = null;   //free positions
-    
-    this.AI_LIST = [];     //ai tank list
 
     this.ai_id = -1; //starting id of ai
     this.ai_add_interval = 0;
     this.last_post_tank_added = null; //store last position the tank added
     this.ai_added = false; //indicate if the ai are added or not
 
-    this.countUser=0;
+    this.count_real_user=0;
+	this.count_boot=0;
 }
 
 Room.MAX_HP_ITEMS = 20;
 Room.MAX_AMMO_ITEMS = 20;
+Room.ITEM_RADIUS = 80;
+Room.MIN_DISTANCE_BETWEEN_PLAYERS = 150;
 
 
 Room.prototype.loadMapAndAI = function () {
@@ -120,12 +121,13 @@ Room.prototype.updateFrameStep = function(delta_time) {
 
 //return number of player including AI
 Room.prototype.getPlayerNumber = function () {
-    return Object.keys(this.PLAYER_LIST).length;
+    return (this.count_real_user + this.count_boot);
 }
 
 //return number of established sockets,i.e. real users
 Room.prototype.getEstablishedSocket = function () {
-    return (Object.keys(this.PLAYER_LIST).length - Object.keys(this.AI_LIST).length);
+	
+    return (this.count_real_user);
 }
 
 
@@ -133,40 +135,77 @@ Room.prototype.clearAll = function () {
     this.OBSTACLE_LIST = null;// Object chuong ngai vat
     this.FREE_ZONE_LIST = null;
     this.ZONE_LIST = null;
-    this.FREE_POSITION_LIST = null;
-    this.AI_LIST = null;
+    this.FREE_POSITION_LIST = null;    
     this.last_post_tank_added = null;
 }
 
 
 Room.prototype.removePlayer = function (player_id) {
+	var player = this.PLAYER_LIST[player_id];
+	
+	if (player.type === 1){
+		this.count_real_user--;
+	} else {
+		this.count_boot--;
+	}
+	
     delete this.PLAYER_LIST[player_id];
 }
 
 
 Room.prototype.addPlayer = function (player) {
     this.PLAYER_LIST[player.id] = player;
-    console.log("-----AddPlayer------------");
-
-    var free_pos_number = this.FREE_POSITION_LIST.length;
-    var rd = Math.floor(Math.random() * free_pos_number); //get a random zoneId
-    if (rd >= free_pos_number) { //can not happen ?
-        console.log("loi roi oi lay random add player vao position m_free");
-        rd = free_pos_number - 1;
-    }
-
-    var free_pos = this.FREE_POSITION_LIST[rd]; //free position
+    console.log("-----AddPlayer------------");    
+    var free_pos = this.getFreePos();
     Utils.logObject(free_pos);// luu y: do luoi ve o client luon luon la boi so cua df_cell_draw_width=20 nen o day vi tri x,y cung phai la boi so cua 20
     player.pos.x = Number(free_pos.x);
     player.pos.y = Number(free_pos.y);
     player.tank_moving_speed = 80;
 
     this.last_post_tank_added = free_pos; //store last position the tank added
+	this.count_real_user++;
     console.log("-----Finish AddPlayer-------------");
     // se while cho den khi tim duoc vi tri thic hop, neu khong tim dc thi dat bien status da no ra khoi server
     // thang moi vao thi trong thoi gian 2s se dc bao ve va co hien tuong nhay nhay
-    console.log("----------------->rd: %s vi tri x=%s y=%s", rd, free_pos.x, free_pos.y);
+    //console.log("----------------->rd: %s vi tri x=%s y=%s", rd, free_pos.x, free_pos.y);
 }
+
+
+Room.prototype.addingAi = function() {
+    //return;
+
+    var player_number = this.getPlayerNumber();
+    if (player_number > 40 || player_number == 0) {
+        return;
+    }
+    
+     if (player_number > 30) {
+		countAddAI = 2;
+     } else if (countAddAI > 20) {
+		countAddAI = 3;
+     } else if (countAddAI > 10) {
+		countAddAI = 4;
+     }
+
+    
+    for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
+        var pos = this.getFreePos();        
+            this.ai_id= this.ai_id - 1;
+            if (this.ai_id < -1000000) {
+                this.ai_id = -1;
+            }
+            var ai = new AI(this.ai_id);
+            ai.lbdisplay = "";
+            ai.pos.x = pos.x;
+            ai.pos.y = pos.y;
+            ai.setBeginLevel();
+            console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
+            this.PLAYER_LIST[this.ai_id] = ai;
+        this.count_boot++;
+    }
+    this.ai_added = true;
+}
+
 
 
 Room.prototype.resetPlayer = function (player) {
@@ -293,13 +332,12 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
 	//console.log('obstacle_arr '+JSON.stringify(obstacle_arr));
     for (i=0; i < tank.level; i++){		
 		
-        var pos = Utils.getRandomPoint(tank.pos.x, tank.pos.y, 100, tank_arr, obstacle_arr);
+        var pos = Utils.getRandomPoint(tank.pos.x, tank.pos.y, Room.ITEM_RADIUS, tank_arr, obstacle_arr);
         var type = (Math.random() < 0.5)? 1 : 2;
         this.count_item ++;
         if (pos !== null){
             var item = new Item(pos.x, pos.y, this.count_item, type);
-            this.ITEM_LIST[item.id] = item;
-			console.log('generate item '+item.id);
+            this.ITEM_LIST[item.id] = item;			
         }
     }
 }
@@ -503,7 +541,7 @@ Room.prototype.updateAi = function (zone_tank_arr) {
             var boot = this.PLAYER_LIST[key];
             boot.updateState();
 
-            var can_fire = Date.now() - boot.last_fire < 300;
+            var can_fire = Date.now() - boot.last_fire < AI.SHOOTING_DURATION;
             if (boot.is_shooted && boot.shooter_id !== 0) {                
                 if (can_fire && this.PLAYER_LIST.hasOwnProperty(boot.shooter_id)) {
                     var target = this.PLAYER_LIST[boot.shooter_id];
@@ -524,64 +562,14 @@ Room.prototype.updateAi = function (zone_tank_arr) {
 }
 
 
-Room.prototype.addingAi = function() {
-    //return;
-
-    var player_number = this.getPlayerNumber();
-    if (player_number > 40 || player_number == 0) {
-        return;
-    }
-
-    var countAddAI = 10;
-/*
-     if (player_number > 30) {
-     countAddAI = 2;
-     } else if (countAddAI > 20) {
-     countAddAI = 3;
-     } else if (countAddAI > 10) {
-     countAddAI = 4;
-     }
-*/
-    //console.log("alskdjalksdjlas");
-    var free_pos_number = this.FREE_POSITION_LIST.length;
-    for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
-
-        var pos = this.getFreePos();
-
-
-        if (pos.x === -2000 || pos.y === -2000) {
-            console.log("add new AI but not have free position");
-            break;
-        } else {
-            this.ai_id= this.ai_id - 1;
-            if (this.ai_id < -1000000) {
-                this.ai_id = -1;
-            }
-
-            var ai = new AI(this.ai_id);
-            ai.lbdisplay = "";
-            ai.pos.x = pos.x;
-            ai.pos.y = pos.y;
-            ai.setBeginLevel();
-            console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
-            this.PLAYER_LIST[this.ai_id] = ai;
-        }
-    }
-    this.ai_added = true;
-}
 
 Room.prototype.getFreePos = function () {
-    
-    var pos = {};
-    pos.x = -2000;
-    pos.y = -2000;
+
     var free_pos_number = this.FREE_POSITION_LIST.length;
-    
-    var demw = 10;
+    var rd = 0;    
     while (demw > 0) {
         var rd = Math.floor(Math.random() * free_pos_number);
         if (rd >= free_pos_number) {
-            console.log(" ===+ERROR === AI random add player vao position m_free");
             rd = free_pos_number - 1;
         }
         var tmp_pos = this.FREE_POSITION_LIST[rd];
@@ -589,19 +577,19 @@ Room.prototype.getFreePos = function () {
 
         for (var key in this.PLAYER_LIST) {
             var tank = this.PLAYER_LIST[key];
-            if (Utils.distace2Object(tank.pos, tmp_pos) < 200) { //this post don't close any other tanks
+            if (Utils.distace2Object(tank.pos, tmp_pos) < Room.MIN_DISTANCE_BETWEEN_PLAYERS) { //this post don't close any other tanks
                 get_this_pos = false;
                 break;
             }
         }
         if (get_this_pos) {//this post don't close any other tanks
-            pos.x = Number(tmp_pos.x);
-            pos.y = Number(tmp_pos.y);
-            break;
+            return tmp_pos;
         }
         demw = demw - 1;
     }
-    return pos;
+	
+	//could not find a safe pos, return random pos		
+    return this.FREE_POSITION_LIST[rd];;
 }
 
 

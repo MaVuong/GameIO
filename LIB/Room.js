@@ -39,7 +39,7 @@ function Room(id) {
 
 Room.MAX_HP_ITEMS = 20;
 Room.MAX_AMMO_ITEMS = 20;
-Room.ITEM_RADIUS = 80;
+Room.ITEM_RADIUS = 50;
 Room.MIN_DISTANCE_BETWEEN_PLAYERS = 150;
 Room.MAX_PLAYER = 40;
 

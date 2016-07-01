@@ -10,7 +10,6 @@ function Player(id) {
     this.name = "USR_" + id;        
     this.lbdisplay = "";
     
-    
     this.room_id = null;
     this.zone_id = 0;
 
@@ -20,11 +19,11 @@ function Player(id) {
 
 
 Player.prototype.setBasicParams =function(){
-	this.score = 549;
+	this.score = 150;
     this.level = 1;
     this.ammo = 140;
-    this.hp = 80;
-    this.max_hp = 80;
+    this.hp = Player.BEGIN_HP;
+    this.max_hp = Player.BEGIN_HP;
     this.max_ammo = 140;
 
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
@@ -74,8 +73,9 @@ Player.prototype.reset = function (x, y) {
 
 
 Player.MAX_LEVEL = 80;
-
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
+Player.BEGIN_HP = 80;
+Player.BEGIN_AMMO = 140;
 
 //min score for the level
 Player.getLevelScore = function (level) {

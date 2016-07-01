@@ -20,7 +20,7 @@ function Player(id) {
 
 
 Player.prototype.setBasicParams =function(){
-	this.score = 0;
+	this.score = 549;
     this.level = 1;
     this.ammo = 140;
     this.hp = 80;
@@ -502,7 +502,7 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             hp: tank.hp + "",
             //isfire:tank.isFire,
             ammo: tank.ammo+"",
-            sp: strspPush,
+            sp: this.tank_moving_speed+"",
             gR: tank.gun_angle + ""
         });
     }
@@ -558,6 +558,7 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
         this.pack_explosion.push({
             x: explosion.pos.x ,
             y: explosion.pos.y,
+            tid:explosion.tid-0,
             tank_angle: explosion.tank_angle ,
             gun_angle: explosion.gun_angle          
         });

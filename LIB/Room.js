@@ -308,7 +308,7 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
                         //make explosion
                         this.count_explosion++;
 						
-                        var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle);
+                        var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle,tank.id);
                         //list of explosion all over the map
                         this.EXPLOSION_LIST[explosion.id] = explosion;
                     
@@ -417,7 +417,7 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
                             
                             //Explosion(x, y, id, tank_angle, gun_angle, zone_id) 
 							var dead_tank = (current_tank.hp > other_tank.hp)? other_tank : current_tank;                         		                                                           
-                            var explosion = new Explosion(dead_tank.pos.x, dead_tank.pos.y , this.count_explosion, dead_tank.tank_angle, dead_tank.gun_angle);
+                            var explosion = new Explosion(dead_tank.pos.x, dead_tank.pos.y , this.count_explosion, dead_tank.tank_angle, dead_tank.gun_angle,dead_tank.id);
 							
                             //list of explosion all over the map
                             this.EXPLOSION_LIST[explosion.id] = explosion;

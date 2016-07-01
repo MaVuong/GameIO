@@ -19,12 +19,12 @@ function Player(id) {
 
 
 Player.prototype.setBasicParams =function(){
-	this.score = 150;
+	this.score = 50;
     this.level = 1;
     this.ammo = 140;
     this.hp = Player.BEGIN_HP;
     this.max_hp = Player.BEGIN_HP;
-    this.max_ammo = 140;
+    this.max_ammo = 100;
 
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
     this.tank_moving_speed = 40;//30-80

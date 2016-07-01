@@ -126,41 +126,52 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 		var angle = Math.random()*Math.PI*2;
 		x2 = x+ Math.cos(angle)*radius;
 		y2 = y+ Math.sin(angle)*radius;	
-		var stop2 = false;
-		var j =0;
-		while (j < tank_arr.length && !stop2){
-			var tank = tank_arr[j];
-			if (Utils.isPointInRetangle(x2, y2, tank.pos.x, tank.pos.y, tank.w, tank.h)){
-				stop1 = true;
-				stop2 = true;
-			} 
-			j++;
-		}
+		
+		if (isPointInMap(x2, y2)){ //stay inside the map
+			var stop2 = false;
+			var stop3 = false;
+			var j =0;
+			while (j < tank_arr.length && !stop2){
+				var tank = tank_arr[j];
+				if (Utils.isPointInRetangle(x2, y2, tank.pos.x, tank.pos.y, tank.w, tank.h)){					
+					stop2 = true;
+				} 
+				j++;
+			}
 
-		var stop3 = false;
-		var k =0;
-		while (k < obstacle_arr.length && !stop3){
-			var obstacle = obstacle_arr[k];
-			if (Utils.isPointInRetangle(x2, y2, obstacle.x, obstacle.y, obstacle.w, obstacle.h)){
-				stop1 = true;
-				stop3 = true;
-			} 
-			k++;
-		}		
+			if (!stop2){ //not stay inside any tank				
+				var k =0;
+				while (k < obstacle_arr.length && !stop3){
+					var obstacle = obstacle_arr[k];
+					if (Utils.isPointInRetangle(x2, y2, obstacle.x, obstacle.y, obstacle.w, obstacle.h)){						
+						stop3 = true;
+					} 
+					k++;
+				}
+				if (!stop3)	{ //not stay in any obstacle
+					stop1 = true; //successful find a the position
+				}	
+				
+			}
+			
+		}	
 		i++;
 	}
 	
 	var pos = null;
-	if (!stop1 && isPointInMap(x2, y2)){
+	if (stop1){
 		pos = {};
 		pos.x =x2;
 		pos.y = y2;
 	}
+	if (pos != null){
+		console.log('is in map '+pos.x +'|' + pos.y);
+	}
 	return pos;
 }
 
-function isPointInMap(x, y){
-	return (x < 1500 && x > -1500 && y > -1000 && y < 1000);
+function isPointInMap(x, y){	
+	return (x < 1450 && x > -1450 && y > -950 && y < 950);
 }
 
 

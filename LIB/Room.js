@@ -186,7 +186,7 @@ Room.prototype.addingAi = function() {
 		var available_slots = Room.MAX_PLAYER - (this.count_real_user + this.count_boot);
 		if (available_slots > 0){
 			var temp = Math.ceil(available_slots * Math.random());
-			countAddAI = temp < 5 ? temp : 5;			
+			countAddAI = temp < 10 ? temp : 10;			
 		}
 	
 	}
@@ -337,10 +337,10 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
     for (i=0; i < tank.level; i++){		
 		
         var pos = Utils.getRandomPoint(tank.pos.x, tank.pos.y, Room.ITEM_RADIUS, tank_arr, obstacle_arr);
-        var type = (Math.random() < 0.5)? 1 : 2;
-        this.count_item ++;
-        if (pos !== null){
-            var item = new Item(pos.x, pos.y, this.count_item, type);
+		if (pos !== null){
+			var type = (Math.random() < 0.5)? 1 : 2;
+			this.count_item ++;        
+            var item = new Item(pos.x, pos.y, this.count_item, type);			
             this.ITEM_LIST[item.id] = item;			
         }
     }

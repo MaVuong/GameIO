@@ -28,7 +28,7 @@ Player.prototype.setBasicParams =function(){
     this.max_ammo = 140;
 
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
-    this.tank_moving_speed = 60;//30-80
+    this.tank_moving_speed = 40;//30-80
     this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to
     this.tank_rotating_status = 0; //not rotating, > 0 in rotating; 1 anticlockwise; 2: clockwise

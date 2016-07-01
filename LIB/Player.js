@@ -88,9 +88,9 @@ Player.getLevelScore = function (level) {
 //awarded score when shoot on target
 Player.getAwarededScore = function (level, isLastOne) {
     if (isLastOne){
-        return 30 + level * 10;
+        return 5 + level * 10;
     } else {
-        return 12;
+        return 3;
     }
 }   
 
@@ -463,7 +463,7 @@ Player.prototype.adjustLevel = function () {
 
 
 Player.prototype.checkItem = function (item) {
-    if (Utils.distace2Object(item.pos, this.pos) < 10 ){
+    if (Utils.distace2Object(item.pos, this.pos) < 25 ){
         item.is_remove = true;
         if (item.type === 1 && this.ammo < this.max_ammo){
             this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;

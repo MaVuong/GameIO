@@ -175,7 +175,7 @@ io.on('connection', function(socket){
 		delete CODE_LIST[socket_wait_id];
 		delete WAITING_SOCKET_LIST[socket_wait_id];
 		delete SOCKET_LIST[socket_wait_id];
-		console.log("socket disconnected: id=%s da duoc go bo khoi room name :%s",socket.wait_id,socket.room_name);
+		//console.log("socket disconnected: id=%s da duoc go bo khoi room name :%s",socket.wait_id,socket.room_name);
 		if (typeof(socket.room_name)!== 'undefined') {
 			var roomdelete=ROOM_LIST[socket.room_name];
 			if (typeof(roomdelete)=== 'undefined'){
@@ -281,7 +281,7 @@ function deleteDeadPlayer(room){
 			delete WAITING_SOCKET_LIST[socket_wait_id];
 			delete SOCKET_LIST[socket_wait_id];
 			socket.is_removed = true;
-			console.log('disconnected=================================================');
+			//console.log('disconnected=================================================');
 			socket.disconnect();			
 		}
 }

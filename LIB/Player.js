@@ -18,20 +18,25 @@ function Player(id) {
 
 
 Player.prototype.setBasicParams =function(){
-	this.score = 50;
+	this.score = Player.BEGIN_SCORE;
     this.level = 1;
-    this.ammo = 140;
-    this.hp = Player.BEGIN_HP;
+    
+	this.ammo = Player.BEGIN_AMMO;
+    this.max_ammo = Player.BEGIN_AMMO;		
+	
+	this.hp = Player.BEGIN_HP;
     this.max_hp = Player.BEGIN_HP;
-    this.max_ammo = 100;
-		
+    
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
-    this.tank_moving_speed = 40;//30-80
-    this.tank_angle = 0;
+    
+	this.tank_moving_speed = 50 + 5 * Math.floor(this.level/10); //speed from 50 --> 90
+    
+	this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to
     this.tank_rotating_status = 0; //not rotating, > 0 in rotating; 1 anticlockwise; 2: clockwise
     this.moving_direction = random_direction; //move status 1, 2, 3,4
-    this.tank_rotating_speed = 320;
+    
+	this.tank_rotating_speed = 320;
 
     //current angle of the gun: 0, 90, 180, 270
     this.gun_angle = random_direction * 90 - 90;
@@ -75,6 +80,7 @@ Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
 Player.BEGIN_HP = 80;
 Player.BEGIN_AMMO = 140;
+Player.BEGIN_SCORE = 50;
 
 //min score for the level
 Player.getLevelScore = function (level) {

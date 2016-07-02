@@ -60,6 +60,7 @@ io.on('connection', function(socket){
 
 
 		var client_json_data=JSON.parse(client_data);
+		//console.log("MyInfo:"+client_json_data.usr);
 		if (client_json_data.platform===9) {
 			var codeend=new Code();
 			codeend.endcodeiOS();
@@ -88,7 +89,7 @@ io.on('connection', function(socket){
 			}
 			
 		}
-		//console.log("MyInfo:"+client_json_data.usr);
+		
 	});
 
 	socket.on('MyValidate',function(client_data){
@@ -309,6 +310,7 @@ setInterval(function(){
 },40);
 
 //update all tank in the map
+
 setInterval(function(){	
 	
 	for(var room_name  in ROOM_LIST){
@@ -320,7 +322,7 @@ setInterval(function(){
 		var socket=SOCKET_LIST[socket_name];
 		var room = ROOM_LIST[socket.room_name];		
 		socket.emit('UpdateTankMap',{			
-			tank:room.all_tank_pack
+			tanks:room.all_tank_pack
 		});		
 	}
 },1000);

@@ -22,11 +22,10 @@ AI.SHOOTING_DURATION = 300;
 
 
 AI.prototype.setBeginLevel = function () {
-	var beginR = Math.floor(Math.random() * 10) + 1;
-    this.level = beginR;	
+	
+    this.level = Math.floor(Math.random() * 20) + 1; //1-20
 	this.max_hp = Player.getMaxHp(this.level);
 	this.max_ammo = Player.getMaxAmmo(this.level);
-    this.tank_moving_speed = 40 + beginR * 2;
     this.hp = this.max_hp - Math.floor(Math.random() * 50);	
     this.score = Player.getLevelScore(this.level) + Math.floor(Math.random() * 50);
 }

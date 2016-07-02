@@ -282,7 +282,8 @@ function deleteDeadPlayer(room){
 			delete SOCKET_LIST[socket_wait_id];
 			socket.is_removed = true;
 			//console.log('disconnected=================================================');
-			socket.disconnect();			
+			socket.disconnect(true);			
+			
 		}
 }
 

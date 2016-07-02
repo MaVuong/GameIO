@@ -223,7 +223,7 @@ Room.prototype.addingAi = function() {
             ai.pos.x = pos.x;
             ai.pos.y = pos.y;
             ai.setBeginLevel();
-            console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
+            //console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
             this.PLAYER_LIST[this.ai_id] = ai;
         this.count_boot++;
 		}

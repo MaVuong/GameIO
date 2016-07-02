@@ -66,8 +66,8 @@ Room.prototype.updateTankMap = function() {
 	for (var tank_id in this.PLAYER_LIST){
 		var tank = this.PLAYER_LIST[tank_id];
 		this.all_tank_pack.push({
-			x: tank.pos.x,
-			y: tank.pos.y
+			x:Number(tank.pos.x) ,
+            y:Number(tank.pos.y)
 		});
 	}
 }	

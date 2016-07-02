@@ -124,6 +124,9 @@ Room.prototype.updateFrameStep = function(delta_time) {
 
     this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr);
 
+	//increase death_life count of dead tanks
+	this.increaseDeadTankCountTime();
+	
     this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
     this.updateAddingAi(delta_time);
@@ -366,7 +369,7 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
 		if (pos !== null){
 			var type = (Math.random() < 0.5)? 1 : 2;
 			this.count_item ++;        
-            var item = new Item(pos.x, pos.y, this.count_item, type);			
+            var item = new Item(tank.pos.x, tank.pos.y, pos.x, pos.y, pos.angle, this.count_item, type);			
             this.ITEM_LIST[item.id] = item;			
         }
     }
@@ -504,7 +507,12 @@ Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_ar
             tank.updateAllObstaclesAroundMe(this.ZONE_LIST);     
         }
     }
-
+	
+	for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
+        var tank = this.DEAD_PLAYER_LIST[tankid];			
+            tank.updateAllTanksAroundMe(zone_tank_arr);
+            tank.updateAllBulletsAroundMe(zone_bullet_arr);
+    }
 }
 
 
@@ -519,6 +527,11 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr){
             var tank = this.PLAYER_LIST[tankid];			
             tank.updateAllExplosionsAroundMe(zone_explosion_arr);
         }
+    }
+	
+	for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
+        var tank = this.DEAD_PLAYER_LIST[tankid];			
+        tank.updateAllExplosionsAroundMe(zone_explosion_arr);		
     }
 }
 
@@ -542,9 +555,15 @@ Room.prototype.updateItemsAroundTanks = function(zone_item_arr){
     for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
         var tank = this.DEAD_PLAYER_LIST[tankid];			
         tank.updateAllItemsAroundMe(zone_item_arr);
-		tank.death_life++;        
     }
 
+}
+
+Room.prototype.increaseDeadTankCountTime = function(){
+	for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
+        var tank = this.DEAD_PLAYER_LIST[tankid];			        
+		tank.death_life++;        
+    }
 }
 
 

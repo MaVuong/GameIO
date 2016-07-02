@@ -122,8 +122,9 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 	var i =0;
 	var x2 = x;
 	var y2 = y;
+	var angle = 0;
 	while (i< 10 && !stop1)	{
-		var angle = Math.random()*Math.PI*2;
+		angle = Math.random()*Math.PI*2;
 		x2 = x+ Math.cos(angle)*radius;
 		y2 = y+ Math.sin(angle)*radius;	
 		
@@ -163,6 +164,7 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 		pos = {};
 		pos.x =x2;
 		pos.y = y2;
+		pos.angle = angle;
 	}
 	return pos;
 }

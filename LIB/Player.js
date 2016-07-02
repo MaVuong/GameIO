@@ -473,7 +473,7 @@ Player.prototype.adjustLevel = function () {
 
 
 Player.prototype.checkItem = function (item) {
-    if (Utils.distace2Object(item.pos, this.pos) < 25 ){
+    if (Utils.distace2Object(item.pos, this.pos) < 30 && !item.is_moving){
         item.is_remove = true;
         if (item.type === 1 && this.ammo < this.max_ammo){
             this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;
@@ -588,7 +588,6 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
             y: item.pos.y,
             type: item.type            
         });
-
     }   
 }
 

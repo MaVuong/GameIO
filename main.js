@@ -273,14 +273,16 @@ setInterval(function(){
 
 
 function deleteDeadPlayer(room){
-		var dead_layer_arr = room.deleteDeadPlayer();
-		for (var id in dead_layer_arr){
-			var socket=SOCKET_LIST[dead_layer_arr[id]];	
+		var dead_player_arr = room.deleteDeadPlayer();
+		console.log('player_id ' + JSON.stringify(dead_player_arr) );
+		for (var id in dead_player_arr){
+			var socket=SOCKET_LIST[dead_player_arr[id]];	
 			var socket_wait_id=socket.wait_id;			
 			delete CODE_LIST[socket_wait_id];
 			delete WAITING_SOCKET_LIST[socket_wait_id];
 			delete SOCKET_LIST[socket_wait_id];
 			socket.is_removed = true;
+			console.log('disconnected=================================================');
 			socket.disconnect();			
 		}
 }
@@ -321,8 +323,7 @@ setInterval(function(){
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
 		var room = ROOM_LIST[socket.room_name];		
-		socket.emit('UpdateTankMap',{			
-			tanks:room.all_tank_pack
-		});		
+		socket.emit('UpdateTankMap',room.all_tank_pack
+		);		
 	}
 },1000);

@@ -12,7 +12,7 @@ function Bullet(player_id, bullet_id) {
     this.opacity = 1;
     this.is_remove = false;
     this.zone_id = 0;
-    this.skipFristFrame=true;
+    this.skipFristFrame=true;	
 }
 
 //set move direction: pos + angle (in degree)

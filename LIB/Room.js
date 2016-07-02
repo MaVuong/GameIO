@@ -96,7 +96,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
 	//delete all item are marked as is_removed = true from previous frame
     this.deleteObjectsFromPreviousStep(this.ITEM_LIST, false);
 	
-	this.updateItemsAroundTanks(zone_item_arr);
+	
 	
     //update all explosion around me, explosion is calculated from previous frame, need to delete before calculate new explosions
     this.updateExplosionsAroundTanks(zone_explosion_arr);
@@ -114,15 +114,18 @@ Room.prototype.updateFrameStep = function(delta_time) {
     //update bullet position and push the bullet into the right zones
     this.updateObjectPositionAndPushIntoRightZone(this.BULLET_LIST, zone_bullet_arr, delta_time);
 
+	//update item position and push the bullet into the right zones
+    this.updateObjectPositionAndPushIntoRightZone(this.ITEM_LIST, zone_item_arr, delta_time);
+	
     //check collision between Bullet-map, obstacles, tanks
     this.checkCollisionOfBullets(zone_tank_arr);
 
     //check collision between tanks, update the explosion list
     this.checkCollisionOfTanks(zone_tank_arr, zone_item_arr);
 
-    
+    //this.updateItemsAroundTanks(zone_item_arr);
 
-    this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr);
+    this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr, zone_item_arr);
 
 	//increase death_life count of dead tanks
 	this.increaseDeadTankCountTime();
@@ -277,18 +280,25 @@ Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
 }
 
 Room.prototype.deleteDeadPlayer = function() {
+	
     var arrToDelete = [];
     var keys = Object.keys(this.DEAD_PLAYER_LIST);
+	console.log('delete dead player 1'+ JSON.stringify(keys));
     for (var i = 0, l = keys.length; i < l; i++) {
         var key = keys[i];
+		
+		console.log('delete dead player key'+ JSON.stringify(arrToDelete)+'|'+this.DEAD_PLAYER_LIST[key].death_life);
         if (this.DEAD_PLAYER_LIST[key].death_life > Room.MAX_DEATH_LIFE) {
-            arrToDelete.push(this.DEAD_PLAYER_LIST[key].id);
+            arrToDelete.push(this.DEAD_PLAYER_LIST[key].id);			
+			console.log('delete dead player key 2'+ JSON.stringify(arrToDelete));
         }
     }
-    for (var i = 0, l = arrToDelete.length; i < l; i++) {
+	console.log('delete dead player 2'+ JSON.stringify(arrToDelete));
+    for (var i = 0, l = arrToDelete.length; i < l; i++) {		
         delete this.DEAD_PLAYER_LIST[arrToDelete[i]]; //delete the object                        
-    }
+    }	
 	return arrToDelete;
+	
 }
 
 Room.prototype.updateObjectPositionAndPushIntoRightZone = function(object_arr, zone_object_arr, delta_time) {
@@ -369,7 +379,7 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
 		if (pos !== null){
 			var type = (Math.random() < 0.5)? 1 : 2;
 			this.count_item ++;        
-            var item = new Item(pos.x, pos.y, this.count_item, type);			
+            var item = new Item(tank.pos.x, tank.pos.y, pos.x, pos.y, pos.angle, this.count_item, type);			
             this.ITEM_LIST[item.id] = item;			
         }
     }
@@ -498,13 +508,14 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
 		}
 }
 
-Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_arr, zone_explosion_arr){
+Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_arr, zone_explosion_arr, zone_item_arr){
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
         if (tankid > 0){ //real user
             var tank = this.PLAYER_LIST[tankid];
             tank.updateAllTanksAroundMe(zone_tank_arr);
             tank.updateAllBulletsAroundMe(zone_bullet_arr);
-            tank.updateAllObstaclesAroundMe(this.ZONE_LIST);     
+            tank.updateAllObstaclesAroundMe(this.ZONE_LIST);			
+			tank.updateAllItemsAroundMe(zone_item_arr);
         }
     }
 	
@@ -512,6 +523,7 @@ Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_ar
         var tank = this.DEAD_PLAYER_LIST[tankid];			
             tank.updateAllTanksAroundMe(zone_tank_arr);
             tank.updateAllBulletsAroundMe(zone_bullet_arr);
+			tank.updateAllItemsAroundMe(zone_item_arr);
     }
 }
 
@@ -533,30 +545,6 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr){
         var tank = this.DEAD_PLAYER_LIST[tankid];			
         tank.updateAllExplosionsAroundMe(zone_explosion_arr);		
     }
-}
-
-Room.prototype.updateItemsAroundTanks = function(zone_item_arr){
-	for (var item_id in  this.ITEM_LIST){
-        var item = this.ITEM_LIST[item_id];
-		//console.log('item '+JSON.stringify(item));
-		if (item.life_time++ > Item.MAX_LIFE_TIME){
-			item.is_remove = true;
-		}
-			
-        Utils.putObjectIntoRightZone(item, item.pos.x, item.pos.y, zone_item_arr);  
-    }
-    for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
-        if (tankid > 0){ //real user                    
-            var tank = this.PLAYER_LIST[tankid];			
-            tank.updateAllItemsAroundMe(zone_item_arr);
-        }
-    }
-	
-    for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
-        var tank = this.DEAD_PLAYER_LIST[tankid];			
-        tank.updateAllItemsAroundMe(zone_item_arr);
-    }
-
 }
 
 Room.prototype.increaseDeadTankCountTime = function(){

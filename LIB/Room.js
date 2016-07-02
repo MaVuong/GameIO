@@ -11,7 +11,10 @@ function Room(id) {
 
     this.PLAYER_LIST = {}; //tank list
     this.count_player = 0;
-    
+	
+	this.DEAD_PLAYER_LIST = {};
+	
+	
     this.EXPLOSION_LIST = {};
     this.count_explosion = 0;
 
@@ -42,6 +45,7 @@ Room.MAX_AMMO_ITEMS = 20;
 Room.ITEM_RADIUS = 50;
 Room.MIN_DISTANCE_BETWEEN_PLAYERS = 150;
 Room.MAX_PLAYER = 40;
+Room.MAX_DEATH_LIFE = 50; //50 frames = 2 seconds before disconnected 
 
 
 Room.prototype.loadMapAndAI = function () {
@@ -79,7 +83,6 @@ Room.prototype.updateFrameStep = function(delta_time) {
 	
 	//delete all item are marked as is_removed = true from previous frame
     this.deleteObjectsFromPreviousStep(this.ITEM_LIST, false);
-
 	
 	this.updateItemsAroundTanks(zone_item_arr);
 	
@@ -239,7 +242,6 @@ Room.prototype.resetPlayer = function (player) {
  *
  */
 
-
 Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
     var arrToDelete = [];
     var keys = Object.keys(object_array);
@@ -250,16 +252,28 @@ Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
         }
     }
     for (var i = 0, l = arrToDelete.length; i < l; i++) {
-        //if tank and real player ==> just reset; otherwise delete object
-        if (isTank && arrToDelete[i] > 0) {
-            this.resetPlayer(object_array[arrToDelete[i]]);         
-        } else {            
-            delete object_array[arrToDelete[i]]; //delete the object                        
-        }
-
-
+        //if tank and real player ==> push into the deleted array, will be close socket later
+        if (isTank && arrToDelete[i] > 0) { 
+            //this.resetPlayer(object_array[arrToDelete[i]]);					
+			this.DEAD_PLAYER_LIST[arrToDelete[i]] = object_array[arrToDelete[i]];
+        } 
+        delete object_array[arrToDelete[i]]; //delete the object                        
     }
+}
 
+Room.prototype.deleteDeadPlayer = function() {
+    var arrToDelete = [];
+    var keys = Object.keys(this.DEAD_PLAYER_LIST);
+    for (var i = 0, l = keys.length; i < l; i++) {
+        var key = keys[i];
+        if (this.DEAD_PLAYER_LIST[key].death_life > Room.MAX_DEATH_LIFE) {
+            arrToDelete.push(this.DEAD_PLAYER_LIST[key].id);
+        }
+    }
+    for (var i = 0, l = arrToDelete.length; i < l; i++) {
+        delete this.DEAD_PLAYER_LIST[arrToDelete[i]]; //delete the object                        
+    }
+	return arrToDelete;
 }
 
 Room.prototype.updateObjectPositionAndPushIntoRightZone = function(object_arr, zone_object_arr, delta_time) {
@@ -512,6 +526,13 @@ Room.prototype.updateItemsAroundTanks = function(zone_item_arr){
             tank.updateAllItemsAroundMe(zone_item_arr);
         }
     }
+	
+    for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
+        var tank = this.DEAD_PLAYER_LIST[tankid];			
+        tank.updateAllItemsAroundMe(zone_item_arr);
+		tank.death_life++;        
+    }
+
 }
 
 

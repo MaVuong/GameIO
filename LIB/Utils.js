@@ -164,9 +164,6 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 		pos.x =x2;
 		pos.y = y2;
 	}
-	if (pos != null){
-		console.log('is in map '+pos.x +'|' + pos.y);
-	}
 	return pos;
 }
 

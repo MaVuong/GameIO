@@ -5,14 +5,13 @@ function Player(id) {
     this.id = id;   
     this.pos = new Vector(0, 0);
     this.w = 25;
-    this.h = 22;
-
+    this.h = 22;	
     this.name = "USR_" + id;        
     this.lbdisplay = "";
     
     this.room_id = null;
     this.zone_id = 0;
-
+	this.death_life = 0;
     this.type = 1;// 1 la player binh thuong, -1 la Boot
 	this.setBasicParams();
 }
@@ -25,7 +24,7 @@ Player.prototype.setBasicParams =function(){
     this.hp = Player.BEGIN_HP;
     this.max_hp = Player.BEGIN_HP;
     this.max_ammo = 100;
-
+		
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
     this.tank_moving_speed = 40;//30-80
     this.tank_angle = 0;

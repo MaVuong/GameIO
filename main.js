@@ -23,6 +23,7 @@ var admin_id=0;
 var waiting_id=0;
 
 var MAX_TRY = 6;
+var FRAME_STEP_INTERVAL = 40/1000;
 
 io.on('connection', function(socket){
 	waiting_id=waiting_id+1;
@@ -127,7 +128,7 @@ io.on('connection', function(socket){
 				var new_room=new Room(room_id);
 				ROOM_LIST[room_id]=new_room;
 				new_room.loadMapAndAI();
-				new_room.addPlayer(player);
+				new_room.addPlayer(player, socket);
 			}else{
                 ROOM_LIST[room_id].addPlayer(player);
 			}
@@ -161,6 +162,9 @@ io.on('connection', function(socket){
 
 
 	socket.on('disconnect', function () {
+		if (socket.is_removed){
+			return;
+		}
 		var socket_wait_id=socket.wait_id;
 		if (socket_wait_id=="XXX") {
 			console.log("ket noi kiem soat vua dong ket noi: "+socket.admin_id);
@@ -268,30 +272,41 @@ setInterval(function(){
 },1000);
 
 
+function deleteDeadPlayer(room){
+		var dead_layer_arr = room.deleteDeadPlayer();
+		for (var id in dead_layer_arr){
+			var socket=SOCKET_LIST[dead_layer_arr[id]];	
+			var socket_wait_id=socket.wait_id;			
+			delete CODE_LIST[socket_wait_id];
+			delete WAITING_SOCKET_LIST[socket_wait_id];
+			delete SOCKET_LIST[socket_wait_id];
+			socket.is_removed = true;
+			socket.disconnect();			
+		}
+}
 
-setInterval(function(){
-	var timedt=40/1000;
-	for(var irname  in ROOM_LIST){
-		var roomtmp=ROOM_LIST[irname];
-		roomtmp.updateFrameStep(timedt);
+setInterval(function(){	
+	for(var room_name  in ROOM_LIST){
+		var room=ROOM_LIST[room_name];		
+		deleteDeadPlayer(room);		
+		room.updateFrameStep(FRAME_STEP_INTERVAL);
 	}
 
-	for (var sname in SOCKET_LIST) {
-		var usr_tmp=SOCKET_LIST[sname];
-		var numbersend=usr_tmp.player.id +"";		
+	for (var socket_name in SOCKET_LIST) {
+		var socket=SOCKET_LIST[socket_name];
+		var numbersend=socket.player.id +"";		
 		
 		/*
-		if (usr_tmp.player.pack_item.length > 0){
-			console.log('emit '+JSON.stringify(usr_tmp.player.pack_item));
+		if (socket.player.pack_item.length > 0){
+			console.log('emit '+JSON.stringify(socket.player.pack_item));
 		}*/
-		usr_tmp.emit('UpdatePosition',{
+		socket.emit('UpdatePosition',{
 			numberID:numbersend,
-			tank:usr_tmp.player.pack_player,
-			obstacbles:usr_tmp.player.pack_obs,
-			bullet:usr_tmp.player.pack_bullet,
-			explosion: usr_tmp.player.pack_explosion,
-			item:usr_tmp.player.pack_item
-		});
-		
+			tank:socket.player.pack_player,
+			obstacbles:socket.player.pack_obs,
+			bullet:socket.player.pack_bullet,
+			explosion: socket.player.pack_explosion,
+			item:socket.player.pack_item
+		});		
 	}
 },40);

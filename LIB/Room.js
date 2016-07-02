@@ -282,18 +282,14 @@ Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
 Room.prototype.deleteDeadPlayer = function() {
 	
     var arrToDelete = [];
-    var keys = Object.keys(this.DEAD_PLAYER_LIST);
-	console.log('delete dead player 1'+ JSON.stringify(keys));
+    var keys = Object.keys(this.DEAD_PLAYER_LIST);	
     for (var i = 0, l = keys.length; i < l; i++) {
         var key = keys[i];
-		
-		console.log('delete dead player key'+ JSON.stringify(arrToDelete)+'|'+this.DEAD_PLAYER_LIST[key].death_life);
         if (this.DEAD_PLAYER_LIST[key].death_life > Room.MAX_DEATH_LIFE) {
-            arrToDelete.push(this.DEAD_PLAYER_LIST[key].id);			
-			console.log('delete dead player key 2'+ JSON.stringify(arrToDelete));
+            arrToDelete.push(this.DEAD_PLAYER_LIST[key].id);				
         }
     }
-	console.log('delete dead player 2'+ JSON.stringify(arrToDelete));
+	
     for (var i = 0, l = arrToDelete.length; i < l; i++) {		
         delete this.DEAD_PLAYER_LIST[arrToDelete[i]]; //delete the object                        
     }	

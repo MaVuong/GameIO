@@ -274,7 +274,6 @@ setInterval(function(){
 
 function deleteDeadPlayer(room){
 		var dead_player_arr = room.deleteDeadPlayer();
-		console.log('player_id ' + JSON.stringify(dead_player_arr) );
 		for (var id in dead_player_arr){
 			var socket=SOCKET_LIST[dead_player_arr[id]];	
 			var socket_wait_id=socket.wait_id;			

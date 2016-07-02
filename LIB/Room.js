@@ -369,7 +369,7 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
 		if (pos !== null){
 			var type = (Math.random() < 0.5)? 1 : 2;
 			this.count_item ++;        
-            var item = new Item(tank.pos.x, tank.pos.y, pos.x, pos.y, pos.angle, this.count_item, type);			
+            var item = new Item(pos.x, pos.y, this.count_item, type);			
             this.ITEM_LIST[item.id] = item;			
         }
     }

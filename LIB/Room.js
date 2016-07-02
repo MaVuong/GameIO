@@ -38,6 +38,8 @@ function Room(id) {
 	this.count_boot=0;
 	
 	this.first_time_add_ai = true;
+	
+	this.all_tank_pack = [];
 }
 
 Room.MAX_HP_ITEMS = 20;
@@ -59,6 +61,16 @@ Room.prototype.loadMapAndAI = function () {
     console.log("MAP %s IS LOADED-->", this.id);
 }
 
+Room.prototype.updateTankMap = function() {
+	this.all_tank_pack = [];
+	for (var tank_id in this.PLAYER_LIST){
+		var tank = this.PLAYER_LIST[tank_id];
+		this.all_tank_pack.push({
+			x: tank.pos.x,
+			y: tank.pos.y
+		});
+	}
+}	
 
 Room.prototype.updateFrameStep = function(delta_time) {
 

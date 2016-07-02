@@ -21,7 +21,6 @@ var ADMIN_CONNECT={};
 var room_count=0;
 var admin_id=0;
 var waiting_id=0;
-
 var MAX_TRY = 6;
 var FRAME_STEP_INTERVAL = 40/1000;
 
@@ -285,21 +284,19 @@ function deleteDeadPlayer(room){
 		}
 }
 
+
+//update every thing in map
 setInterval(function(){	
 	for(var room_name  in ROOM_LIST){
 		var room=ROOM_LIST[room_name];		
-		deleteDeadPlayer(room);		
-		room.updateFrameStep(FRAME_STEP_INTERVAL);
+		deleteDeadPlayer(room);		//delete dead player from room
+		room.updateFrameStep(FRAME_STEP_INTERVAL); //update every thing in the room
 	}
 
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
 		var numbersend=socket.player.id +"";		
 		
-		/*
-		if (socket.player.pack_item.length > 0){
-			console.log('emit '+JSON.stringify(socket.player.pack_item));
-		}*/
 		socket.emit('UpdatePosition',{
 			numberID:numbersend,
 			tank:socket.player.pack_player,
@@ -310,3 +307,20 @@ setInterval(function(){
 		});		
 	}
 },40);
+
+//update all tank in the map
+setInterval(function(){	
+	
+	for(var room_name  in ROOM_LIST){
+		var room = ROOM_LIST[room_name];		
+		room.updateTankMap(); //update the map of all tanks
+	}
+
+	for (var socket_name in SOCKET_LIST) {
+		var socket=SOCKET_LIST[socket_name];
+		var room = ROOM_LIST[socket.room_name];		
+		socket.emit('UpdateTankMap',{			
+			tank:room.all_tank_pack
+		});		
+	}
+},1000);

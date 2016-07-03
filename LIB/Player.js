@@ -239,28 +239,28 @@ Player.prototype.setNewDirection = function (new_direction) {
 Player.prototype.updatePosition = function (delta_time) {   
     if (this.tank_angle_to_rotate > 0) { // anticlockwise
         var delta_angle = Math.round(delta_time * this.tank_rotating_speed); // angle has rotated in one frame
-        var tmp_angle=this.tank_angle_to_rotate;
+        //var tmp_angle=this.tank_angle_to_rotate;
         this.tank_angle_to_rotate = this.tank_angle_to_rotate - delta_angle; //angle left to final position
         if (this.tank_angle_to_rotate < 5) { //< 5 stop rotate
             this.tank_angle_to_rotate = 0;   //reset angle rotate
             this.tank_rotating_status = 0;      //don' rotate
-            this.gun_angle=this.gun_angle+tmp_angle;
+           // this.gun_angle=this.gun_angle+tmp_angle;
         } else {
             this.tank_angle = this.tank_angle + delta_angle; //current angle of tank
-            this.gun_angle=this.gun_angle+delta_angle;// nong sung cung quay 1 goc giong xe tank
+           // this.gun_angle=this.gun_angle+delta_angle;// nong sung cung quay 1 goc giong xe tank
         }
     } else if (this.tank_angle_to_rotate < 0) { //clockwise
         var delta_angle = Math.round(delta_time * this.tank_rotating_speed);
-        var lastTG = this.tank_angle_to_rotate;
-        var tmp_angle=this.tank_angle_to_rotate;
+        //var lastTG = this.tank_angle_to_rotate;
+        //var tmp_angle=this.tank_angle_to_rotate;
         this.tank_angle_to_rotate = this.tank_angle_to_rotate + delta_angle;
         if (this.tank_angle_to_rotate > -5) {
             this.tank_rotating_status = 0;
             this.tank_angle_to_rotate = 0;
-            this.gun_angle=this.gun_angle+tmp_angle;// la cong boi vi tmp_angle=this.tank_angle_to_rotate la so am
+            //this.gun_angle=this.gun_angle+tmp_angle;// la cong boi vi tmp_angle=this.tank_angle_to_rotate la so am
         } else {
             this.tank_angle = this.tank_angle - delta_angle; //current angle of tank
-            this.gun_angle=this.gun_angle-delta_angle;// nong sung cung quay 1 goc giong xe tank
+            //this.gun_angle=this.gun_angle-delta_angle;// nong sung cung quay 1 goc giong xe tank
         }
     }
 

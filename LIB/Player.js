@@ -19,7 +19,7 @@ function Player(id) {
 
 Player.prototype.setBasicParams =function(){
 	this.score = Player.BEGIN_SCORE;
-    this.level = 9;
+    this.level = 1;
     
 	this.ammo = Player.BEGIN_AMMO;
     this.max_ammo = Player.BEGIN_AMMO;		
@@ -80,7 +80,7 @@ Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
 Player.BEGIN_HP = 80;
 Player.BEGIN_AMMO = 140;
-Player.BEGIN_SCORE = 1000;
+Player.BEGIN_SCORE = 50;
 
 //min score for the level
 Player.getLevelScore = function (level) {

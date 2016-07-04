@@ -35,7 +35,7 @@ io.on('connection', function(socket){
 	socket.loaded=false;
 	WAITING_SOCKET_LIST[waiting_id]=socket;
 
-	socket.on('tathetcacketnoi',function(client_data){
+	socket.on('tathetcacketnoi',function(client_data){ //for admin only
 		if (socket.wait_id=="XXX") {
 			var json_data=JSON.parse(client_data);
 
@@ -56,17 +56,18 @@ io.on('connection', function(socket){
 		}
 	});
 
+	
 	socket.on('MyInfo',function(client_data){
 
-
 		var client_json_data=JSON.parse(client_data);
-		//console.log("MyInfo:"+client_json_data.usr);
+		console.log("MyInfo:"+ JSON.stringify(client_json_data));
 		if (client_json_data.platform===9) {
 			var codeend=new Code();
 			codeend.endcodeiOS();
             var data = {key:codeend.key1,id:socket.wait_id};
-
+			console.log("Response	:"+ JSON.stringify(data));	
 			socket.emit('RequestValidate',{key:codeend.key1,id:socket.wait_id+""});
+			
 			CODE_LIST[waiting_id]=codeend.key2;
 			socket.usrdpl=client_json_data.usr;
 		}else{
@@ -93,7 +94,7 @@ io.on('connection', function(socket){
 	});
 
 	socket.on('MyValidate',function(client_data){
-		console.log('client validate '+ client_data);
+		console.log('client validate '+ JSON.stringify(client_data));
 		if (socket.loaded) {
 			console.log("--------------------> client validate 2 lan lien -------");
 			return;
@@ -162,7 +163,8 @@ io.on('connection', function(socket){
 
 
 	socket.on('disconnect', function () {
-		if (socket.is_removed){
+		console.log("receive disconnect message from "+socket.player.id);
+		if (socket.is_removed ){
 			return;
 		}
 		var socket_wait_id=socket.wait_id;
@@ -184,7 +186,7 @@ io.on('connection', function(socket){
 				roomdelete.removePlayer(socket_wait_id);
 			}			
 		}else{
-			console.log("client khong phan hoi viec validate key , het timeout "+socket_wait_id);
+			console.log("client khong phan hoi viec validate key , het timeout room name undefined"+socket_wait_id);
 			if (typeof(socket.player)!== 'undefined') {
 				console.log("---ERROR CODE---------cho nay vo cung kho hieu -----------"+socket.player);
 			}
@@ -223,7 +225,7 @@ setInterval(function(){
 		var indexDelte=arrayDelete[mx];
 		var socketObj_delete=WAITING_SOCKET_LIST[indexDelte]; 
 		socketObj_delete.disconnect();
-		console.log("het thoi gian nen xoa: "+socketObj_delete.wait_id);
+		console.log("het thoi gian nen xoa: "+socketObj_delete.wait_id); //xoa mai khong het ==> verify
 	}
 	arrayDelete=[];
 
@@ -281,7 +283,7 @@ function deleteDeadPlayer(room){
 			delete WAITING_SOCKET_LIST[socket_wait_id];
 			delete SOCKET_LIST[socket_wait_id];
 			socket.is_removed = true;
-			//console.log('disconnected=================================================');
+			console.log('server disconnect =======socket.is_removed ' +socket.is_removed);
 			socket.disconnect(true);			
 			
 		}

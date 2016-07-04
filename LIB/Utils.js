@@ -120,13 +120,17 @@ Utils.putObjectIntoRightZone = function(object, x, y, zone_object_arr){
 Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 	var stop1 = false;
 	var i =0;
-	var x2 = x;
-	var y2 = y;
 	var angle = 0;
+	var x2, y2;
 	while (i< 10 && !stop1)	{
-		angle = Math.random()*Math.PI*2;
+		x2 = 0;
+		y2 = 0;
+		angle = 360*Math.random(); //*Math.PI*2;
 		x2 = x+ Math.cos(angle)*radius;
 		y2 = y+ Math.sin(angle)*radius;	
+		
+		console.log(angle +'|'+Math.cos(angle));
+		console.log(angle +'|'+Math.sin(angle));
 		
 		if (isPointInMap(x2, y2)){ //stay inside the map
 			var stop2 = false;

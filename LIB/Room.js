@@ -165,7 +165,9 @@ Room.prototype.clearAll = function () {
 
 Room.prototype.removePlayer = function (player_id) {
 	var player = this.PLAYER_LIST[player_id];
-	
+	if (player === null){
+		return;
+	}
 	if (player.type === 1){
 		this.count_real_user--;
 	} else {
@@ -223,7 +225,7 @@ Room.prototype.addingAi = function() {
             ai.pos.x = pos.x;
             ai.pos.y = pos.y;
             ai.setBeginLevel();
-            //console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
+            console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
             this.PLAYER_LIST[this.ai_id] = ai;
         this.count_boot++;
 		}
@@ -569,13 +571,13 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
 Room.prototype.updateAddingAi =function(delta_time) {
     this.ai_add_interval = this.ai_add_interval + delta_time;
 	if (this.first_time_add_ai){
-		if (this.ai_add_interval > 2){
+		if (this.ai_add_interval > 1){
 			this.addingAi();
 			this.ai_add_interval = 0;
 			this.first_time_add_ai = false;
 		} 		
 	} else {
-		if (this.ai_add_interval > 5) {			
+		if (this.ai_add_interval > 4) {			
 		        this.addingAi();
 				this.ai_add_interval = 0;
 		}

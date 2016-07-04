@@ -29,7 +29,7 @@ Player.prototype.setBasicParams =function(){
     
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
     
-	this.tank_moving_speed = 50 + 5 * Math.floor(this.level/10); //speed from 50 --> 90
+	this.tank_moving_speed = 50 + 2.5 * Math.floor(this.level/5); //speed from 50 --> 90
     
 	this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to

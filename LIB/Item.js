@@ -5,9 +5,6 @@ function Item(x0, y0, x_final, y_final, angle, id, type) {
     this.id = id;
     this.pos = new Vector(x0, y0);
 	this.final_pos = new Vector(x_final, y_final);	
-			var left_distance = this.pos.getDistance(this.final_pos);
-		console.log('delta_distance '+left_distance);
-
 	this.angle = angle;
 	this.zone_id = null;	
 	this.type = type;
@@ -21,16 +18,8 @@ function Item(x0, y0, x_final, y_final, angle, id, type) {
 
 Item.prototype.updatePosition = function (delta_time) {	
 	if (this.is_moving){		
-		
-		console.log('before'+this.pos.x +'|'+this.pos.y +'|'+this.id);
-		
 		this.pos.update(this.angle, delta_time, this.speed);		
-		console.log('after'+this.pos.x +'|'+this.pos.y+'|'+this.id);
-		
 		var left_distance = this.pos.getDistance(this.final_pos);
-		console.log('left distance'+left_distance+'|'+this.id);
-		
-
 		if (left_distance < 2 * this.speed*delta_time){
 			this.pos.x = this.final_pos.x;
 			this.pos.y = this.final_pos.y;

@@ -19,7 +19,7 @@ function Player(id) {
 
 Player.prototype.setBasicParams =function(){
 	this.score = Player.BEGIN_SCORE;
-    this.level = 1;
+    this.level = 9;
     
 	this.ammo = Player.BEGIN_AMMO;
     this.max_ammo = Player.BEGIN_AMMO;		
@@ -29,7 +29,7 @@ Player.prototype.setBasicParams =function(){
     
     var random_direction = Math.floor(Math.random() * 4) + 1; //1-4
     
-	this.tank_moving_speed = 50 + 2.5 * Math.floor(this.level/5); //speed from 50 --> 90
+	this.tank_moving_speed = Player.getMovingSpeed(this.level);
     
 	this.tank_angle = 0;
     this.tank_angle_to_rotate = 0; //angle to rotate to
@@ -80,7 +80,7 @@ Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
 Player.BEGIN_HP = 80;
 Player.BEGIN_AMMO = 140;
-Player.BEGIN_SCORE = 50;
+Player.BEGIN_SCORE = 1000;
 
 //min score for the level
 Player.getLevelScore = function (level) {
@@ -89,6 +89,9 @@ Player.getLevelScore = function (level) {
     return level_core;
 }   
 
+Player.getMovingSpeed =function(level){
+	return (50 + 2.5 * Math.floor(level/5)); //speed from 50 --> 90
+}
 
 //awarded score when shoot on target
 Player.getAwarededScore = function (level, isLastOne) {
@@ -468,6 +471,7 @@ Player.prototype.adjustLevel = function () {
         this.level++;
         this.max_ammo = Player.getMaxAmmo(this.level);
         this.max_hp = Player.getMaxHp(this.level);
+		this.tank_moving_speed = Player.getMovingSpeed(this.level);
     }
 }
 
@@ -481,7 +485,7 @@ Player.prototype.checkItem = function (item) {
         
         if (item.type === 2 && this.hp < this.max_hp){
             this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
-            this.score += Math.round(0.2 * item.value);
+            this.score += Math.round(0.1 * item.value);
 			if (this.type === 1){ //only adjust level of real user
 				this.adjustLevel();
 			}

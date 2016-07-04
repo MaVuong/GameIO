@@ -53,7 +53,7 @@ Room.MAX_DEATH_LIFE = 50; //50 frames = 2 seconds before disconnected
 Room.prototype.loadMapAndAI = function () {
     fs = require('fs')
     var fs = require('fs');
-    var obj = JSON.parse(fs.readFileSync('./Map/mapgame1.json', 'utf8'));
+    var obj = JSON.parse(fs.readFileSync('./Map/mapgame2.json', 'utf8'));
     this.OBSTACLE_LIST = obj.mapObstacle;
     this.FREE_ZONE_LIST = obj.mapFreeRect; //free zone to gen items
     this.ZONE_LIST = obj.Unit; //array of zones, each zone is array of obs
@@ -641,7 +641,7 @@ Room.prototype.getFreePos = function () {
     }
 	
 	//could not find a safe pos, return random pos		
-	console.log(this.FREE_POSITION_LIST[rd].x + '|'+this.FREE_POSITION_LIST[rd].y)
+	//console.log(this.FREE_POSITION_LIST[rd].x + '|'+this.FREE_POSITION_LIST[rd].y)
     return this.FREE_POSITION_LIST[rd];
 }
 

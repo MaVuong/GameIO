@@ -3,7 +3,58 @@
  */
 var Utils = function () {
 }
+Utils.sizeof = function (object) {
+    // initialise the list of objects and size
+  var objects = [object];
+  var size    = 0;
 
+  // loop over the objects
+  for (var index = 0; index < objects.length; index ++){
+
+    // determine the type of the object
+    switch (typeof objects[index]){
+
+      // the object is a boolean
+      case 'boolean': size += 4; break;
+
+      // the object is a number
+      case 'number': size += 8; break;
+
+      // the object is a string
+      case 'string': size += 2 * objects[index].length; break;
+
+      // the object is a generic object
+      case 'object':
+
+        // if the object is not an array, add the sizes of the keys
+        if (Object.prototype.toString.call(objects[index]) != '[object Array]'){
+          for (var key in objects[index]) size += 2 * key.length;
+        }
+
+        // loop over the keys
+        for (var key in objects[index]){
+
+          // determine whether the value has already been processed
+          var processed = false;
+          for (var search = 0; search < objects.length; search ++){
+            if (objects[search] === objects[index][key]){
+              processed = true;
+              break;
+            }
+          }
+
+          // queue the value to be processed if appropriate
+          if (!processed) objects.push(objects[index][key]);
+
+        }
+
+    }
+
+  }
+
+  // return the calculated size
+  return size;
+}
 
 Utils.calcAngle = function (sourcePos, targetPos) {
     var dy = targetPos.y - sourcePos.y;
@@ -129,8 +180,8 @@ Utils.getRandomPoint = function (x, y, radius, tank_arr, obstacle_arr){
 		x2 = x+ Math.cos(angle)*radius;
 		y2 = y+ Math.sin(angle)*radius;	
 		
-		console.log(angle +'|'+Math.cos(angle));
-		console.log(angle +'|'+Math.sin(angle));
+		//console.log(angle +'|'+Math.cos(angle));
+		//console.log(angle +'|'+Math.sin(angle));
 		
 		if (isPointInMap(x2, y2)){ //stay inside the map
 			var stop2 = false;

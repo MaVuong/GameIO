@@ -1,6 +1,8 @@
 var Player=require('./LIB/Player');
 var Code=require('./LIB/Code');
 var Room=require('./LIB/Room');
+var Utils = require('./LIB/Utils');
+
 
 var express = require('express');
 var app = express();
@@ -289,7 +291,7 @@ function deleteDeadPlayer(room){
 		}
 }
 
-
+var sizesend=0;
 //update every thing in map
 setInterval(function(){	
 	for(var room_name  in ROOM_LIST){
@@ -301,22 +303,23 @@ setInterval(function(){
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
 		var numbersend=socket.player.id +"";		
-		
-		socket.emit('UpdatePosition',{
+		var objectsend={
 			numberID:numbersend,
 			tank:socket.player.pack_player,
 			obstacbles:socket.player.pack_obs,
 			bullet:socket.player.pack_bullet,
 			explosion: socket.player.pack_explosion,
 			item:socket.player.pack_item
-		});		
+		};
+		sizesend=sizesend+Utils.sizeof(objectsend);
+		socket.emit('UpdatePosition',objectsend);		
 	}
 },40);
 
 //update all tank in the map
 
 setInterval(function(){	
-	
+
 	for(var room_name  in ROOM_LIST){
 		var room = ROOM_LIST[room_name];		
 		room.updateTankMap(); //update the map of all tanks
@@ -328,4 +331,10 @@ setInterval(function(){
 		socket.emit('UpdateTankMap',room.all_tank_pack
 		);		
 	}
+
+	//console.log("sizesend: %skb",sizesend/1024);
+	sizesend=0;
+	
+
+
 },1000);

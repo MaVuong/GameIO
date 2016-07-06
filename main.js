@@ -10,6 +10,12 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http,{'pingInterval': 2000, 'pingTimeout': 5000});
 app.use(express.static(__dirname + '/DataGame'));
 
+app.get('/gameconfig', function(req, res){
+  var file = require('/DataGame/gameconfig.json');
+  res.setHeader('Content-Type', 'application/json');  
+  res.send(file);  
+});
+
 http.listen(2020, function(){
 	console.log('listening on : 2020');
 });
@@ -164,8 +170,7 @@ io.on('connection', function(socket){
 	});
 
 
-	socket.on('disconnect', function () {
-		console.log("receive disconnect message from "+socket.player.id);
+	socket.on('disconnect', function () {		
 		if (socket.is_removed ){
 			return;
 		}
@@ -302,15 +307,18 @@ setInterval(function(){
 
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
-		var numbersend=socket.player.id +"";		
+
+		var up_step=socket.player.update_step;
 		var objectsend={
-			numberID:numbersend,
-			tank:socket.player.pack_player,
-			obstacbles:socket.player.pack_obs,
-			bullet:socket.player.pack_bullet,
-			explosion: socket.player.pack_explosion,
-			item:socket.player.pack_item
+			t:socket.player.pack_player,
+			b:socket.player.pack_bullet,
+			e:socket.player.pack_explosion
+			
 		};
+		if (up_step) {
+			objectsend.o=socket.player.pack_obs;
+			objectsend.i=socket.player.pack_item;
+		}
 		sizesend=sizesend+Utils.sizeof(objectsend);
 		socket.emit('UpdatePosition',objectsend);		
 	}
@@ -328,8 +336,7 @@ setInterval(function(){
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
 		var room = ROOM_LIST[socket.room_name];		
-		socket.emit('UpdateTankMap',room.all_tank_pack
-		);		
+		socket.emit('UpdateTankMap',room.all_tank_pack);		
 	}
 
 	//console.log("sizesend: %skb",sizesend/1024);
@@ -338,3 +345,21 @@ setInterval(function(){
 
 
 },1000);
+
+
+//get player with highest score
+
+setInterval(function(){	
+
+	for(var room_name  in ROOM_LIST){
+		var room = ROOM_LIST[room_name];		
+		room.updateBestPlayers(); //update the map of all tanks
+	}
+
+	for (var socket_name in SOCKET_LIST) {
+		var socket=SOCKET_LIST[socket_name];
+		var room = ROOM_LIST[socket.room_name];		
+		socket.emit('BestPlayers', room.best_players);				
+	}
+
+},5000);

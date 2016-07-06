@@ -5,9 +5,9 @@ function Code() {
 }
 
 Code.prototype.endcodeiOS = function () {
-    var charendcode1 = 'TanhPhoXBuonZLamTWoVuongConHiChieLanhBUWotEMdeMThPbuonXNamNghWeKhoiDDtoaNWZguoiLuaThWuaChimDuoiSuongHHNu=BeZsxTronCharguODuigTieChiddChAhLTheTiengDyDhQuyeNbDDIK'
-    var charendcode2 = 'TOshrRaDDaXaDbgaZKeTuDZemPaohDoRuoiDnongAnhDugMinhFAhdYeuDhhXuaChniConRAntHanFDangQyacSaTahKizhSuWzyACDLonDntCaoDBuaNodChiDoiAVsaiDbgAdKnCabgiiAymOGSXanhMauDemA'
-    var charendcode3 = 'CdaoLAnhNagxyaAnhDemRaDOtthNATorTancHOdnGyoiXuaKhoisdKHinguDTDanAochoDDKhiNuaDoxxaLunfSangEnJgoiNhjkeChuHNgayXuaEsoiHExtRoixHeTDchAngCohDchiDnaUdAuEmJyeuFkNhu'
+    var charendcode1 = 'TanhPhoXBuonZLamTWoVuongConHiChieLanhBUWotEMdeMThPbuonXNamNghWeKhoiDDtoaNWZguoiLuaThWuaChimDuoiSuongHHNu=BeZsxTronCharguODuigTieChiddChAhLTheTiengDyDhQuyeNbDDIKHcdsaxoP';
+    var charendcode2 = 'TOshrRaDDaXaDbgaZKeTuDZemPaohDoRuoiDnongAnhDugMinhFAhdYeuDhhXuaChniConRAntHanFDangQyacSaTahKizhSuWzyACDLonDntCaoDBuaNodChiDoiAVsaiDbgAdKnCabgiiAymOGSXanhMauDemAvcAhOYxB';
+    var charendcode3 = 'CdaoLAnhNagxyaAnhDemRaDOtthNATorTancHOdnGyoiXuaKhoisdKHinguDTDanAochoDDKhiNuaDoxxaLunfSangEnJgoiNhjkeChuHNgayXuaEsoiHExtRoixHeTDchAngCohDchiDnaUdAuEmJyeuFkNhuUchHAhxqoi';
 
     var charClient1 = "Q2Rhb0xBbmhOYWd4eWFBbmhEZW1SYURPdHRoTkFUb3JUYW5jSE9kbkd5GlEb2lBVnNhaURiZ0FkS25DYWJnaWlBeW1PR1NYYW5oTWF1RGVtb2lYdWFLaveHhhTHVuZlNhbmdFbkpnb2lOaGprZUNodUhOZ2F5WHVhRXNvaUhFe";
     var charClient2 = "VE9zaHJSYUREYVhhRGJnYVpLZVR1RFplbVBhb2hEb1J1b2lEbm9uZ0FuaER1Z0G9pQ0NzZEtIaW5ndURURGFuQW9jaG9EREtoaU51YUR1pbmhGQWhkWWV1RGhoWHVhQ2huaUNvblJBbnRIYW5GRGFuZ1F5YWNTYVRhaEtpemoP";
@@ -22,7 +22,7 @@ Code.prototype.endcodeiOS = function () {
     }
 
     var kitu = new Buffer(random1).toString('base64');
-    var mh1 = charendcode1.substring(stt, stt + 3) + charendcode2.substring(stt, stt + 3) + charendcode3.substring(stt, stt + 3) + kitu;
+    var mh1 = charendcode1.substring(stt, stt + 5) + charendcode2.substring(stt, stt + 5) + charendcode3.substring(stt, stt + 5) + kitu;
     this.key1 = new Buffer(mh1).toString('base64');
 
     var crypto = require('crypto');

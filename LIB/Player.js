@@ -66,6 +66,11 @@ Player.prototype.setBasicParams =function(){
 
     this.dtmove=0;
     this.isFire=false;
+
+    this.time_cout_update=18;// chi trong gioi han 0-20;
+
+    this.count_skip=0;
+    this.update_step=false;
 }
 
 
@@ -240,6 +245,14 @@ Player.prototype.setNewDirection = function (new_direction) {
  */
 
 Player.prototype.updatePosition = function (delta_time) {   
+    this.count_skip=this.count_skip+1; 
+    if (this.count_skip>8) {
+        this.count_skip=0;
+        this.update_step=true;
+    }else{
+        this.update_step=false;
+    }
+
     if (this.tank_angle_to_rotate > 0) { // anticlockwise
         var delta_angle = Math.round(delta_time * this.tank_rotating_speed); // angle has rotated in one frame
         //var tmp_angle=this.tank_angle_to_rotate;
@@ -497,28 +510,83 @@ Player.prototype.checkItem = function (item) {
 
 //get all tanks around one tank to send to client
 Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
+    this.time_cout_update=this.time_cout_update+1;
+    var send_full_infomation=false;
+    if (this.time_cout_update>=20) {
+        send_full_infomation=true;
+        this.time_cout_update=0;
+    }
+
     this.pack_player =[];
     var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
     for (var i=0; i < tank_arr.length; i++){
         var tank = tank_arr[i];
         //don't send information as this tank is in collision
-        var strspPush = (this.is_collided)? "": tank.tank_moving_speed + "|" + tank.moving_direction + "|" + tank.tank_rotating_status;
+     
+        var t_xpos=Number(tank.pos.x+2000).toFixed(1);
+        var t_ypos=Number(tank.pos.y+2000).toFixed(1);
+        t_xpos=t_xpos*10;
+        t_xpos=Number(t_xpos).toFixed(0);
+        t_ypos=t_ypos*10;
 
-        this.pack_player.push({
-            x: Number(tank.pos.x).toFixed(2) + "",
-            y: Number(tank.pos.y).toFixed(2) + "",
-            id: tank.id + "",
-            r: Number(tank.tank_angle).toFixed(2) + "",
-            //typeTank:player_tmp.typeTank,
-            lbdisplay: tank.lbdisplay,
-            level: tank.level + "",
-            score: tank.score + "",
-            hp: tank.hp + "",
-            //isfire:tank.isFire,
-            ammo: tank.ammo+"",
-            sp: this.tank_moving_speed+"",
-            gR: tank.gun_angle + ""
-        });
+        var t_a=Number(tank.tank_angle);
+        var g_a=Number(tank.gun_angle);
+        if (t_a<0) {
+            t_a=t_a+360;
+        }else if (t_a>=360) {
+            t_a=t_a-360;
+        }
+
+        if (g_a<0) {
+            g_a=g_a+360;
+        }else if(g_a>=360){
+            g_a=g_a-360;
+        }
+        t_a=Number(t_a).toFixed(0);
+        t_a=Number(t_a);
+        g_a=Number(g_a).toFixed(0);
+        g_a=Number(g_a);
+
+        var r_g_t=t_a*1000+g_a;
+        r_g_t=Number(r_g_t);
+        if (send_full_infomation) {
+            r_g_t=r_g_t+1000000;
+        }
+        var Psend=t_xpos*100000+t_ypos;
+
+        var h_p=tank.hp;
+        var m_mo=tank.ammo;
+        if (h_p<0) {
+            h_p=0;
+        }
+        if (m_mo<0) {
+            m_mo=0;
+        }
+        m_mo=Number(m_mo).toFixed(0);
+        h_p=Number(h_p).toFixed(0);
+        var e_hp_ammo=(Number(h_p)*10000)+Number(m_mo);
+        e_hp_ammo=Number(e_hp_ammo).toFixed(0);
+        e_hp_ammo=Number(e_hp_ammo);
+        
+        var s_send=Number(tank.score);
+        var lv_s=Number(tank.level);
+        var lv_s=lv_s*1000000+s_send;
+        lv_s=Number(lv_s);
+        var objx={
+            p: Psend,
+            i: Number(tank.id),
+            s: lv_s,
+            e:e_hp_ammo,
+            r:r_g_t
+        };
+        if (send_full_infomation) {
+            objx.n=tank.lbdisplay+"";
+            var spx=Number(tank.tank_moving_speed).toFixed(0);
+            spx=Number(spx);
+            objx.sp=spx;
+        }
+
+        this.pack_player.push(objx);
     }
      
     
@@ -532,12 +600,25 @@ Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
     for (var i=0; i < obstacle_arr.length; i++){
         var obstacle = obstacle_arr[i];
         if (Utils.distace2Object(this.pos, obstacle) < 400) {
+            var t_xpos=Number(obstacle.x);
+            var t_ypos=Number(obstacle.y);
+            t_xpos=Number(t_xpos+2000).toFixed(0);
+            t_ypos=Number(t_ypos+2000).toFixed(0);
+
+            t_xpos=t_xpos*10;
+            t_ypos=t_ypos*10;
+            var Psend=t_xpos*100000+t_ypos;
+
+            var w_f=Number(obstacle.w).toFixed(0);
+            var h_f=Number(obstacle.h).toFixed(0);
+            var w_h=Number(w_f)*1000+Number(h_f);
+
+            var strid=obstacle.id.replace("obj","");
+            var numid=Number(strid);
+            numid=numid*1000000+w_h;
             this.pack_obs.push({
-                x: obstacle.x,
-                y: obstacle.y,
-                w: obstacle.w,
-                h: obstacle.h,
-                id: obstacle.id+""
+                p: Psend,
+                o:numid
             });
         }
 
@@ -552,12 +633,19 @@ Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
     this.pack_bullet = [];
     for (var i=0; i < bullet_arr.length; i++){
         var bullet = bullet_arr[i];
-        JSON.stringify(bullet);
+        
+        var t_xpos=Number(bullet.pos.x);
+        var t_ypos=Number(bullet.pos.y);
+        t_xpos=Number(t_xpos+2000).toFixed(0);
+        t_ypos=Number(t_ypos+2000).toFixed(0);
+
+        t_xpos=t_xpos*10;
+        t_ypos=t_ypos*10;
+        var Psend=t_xpos*100000+t_ypos;
+
         this.pack_bullet.push({
-            x: Number(bullet.pos.x),
-            y: Number(bullet.pos.y),
-            opp: bullet.opacity,
-            id: bullet.id+""
+            p:Psend,
+            i: Number(bullet.id)
         });
 
     }
@@ -569,12 +657,19 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
     this.pack_explosion = [];
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
+
+        var t_xpos=Number(explosion.pos.x);
+        var t_ypos=Number(explosion.pos.y);
+        t_xpos=Number(t_xpos+2000).toFixed(0);
+        t_ypos=Number(t_ypos+2000).toFixed(0);
+
+        t_xpos=t_xpos*10;
+        t_ypos=t_ypos*10;
+        var Psend=t_xpos*100000+t_ypos;
         this.pack_explosion.push({
-            x: explosion.pos.x ,
-            y: explosion.pos.y,
-            tid:explosion.tid-0,
-            tank_angle: explosion.tank_angle ,
-            gun_angle: explosion.gun_angle          
+            p:Psend,
+            t:explosion.tid-0,
+            ta: explosion.tank_angle        
         });
 
     }
@@ -586,11 +681,22 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
     this.pack_item = [];
     for (var i=0; i < item_arr.length; i++){
         var item = item_arr[i];
+        var t_xpos=Number(item.pos.x);
+        var t_ypos=Number(item.pos.y);
+        t_xpos=Number(t_xpos+2000).toFixed(0);
+        t_ypos=Number(t_ypos+2000).toFixed(0);
+        t_xpos=t_xpos*10;
+        t_ypos=t_ypos*10;
+        var Psend=t_xpos*100000+t_ypos;
+
+        var id_it=Number(item.id).toFixed(0);
+        
+        var type_it=Number(item.type).toFixed(0);
+        id_it=Number(id_it)*1000000+Number(type_it); 
+        id_it=Number(id_it);
         this.pack_item.push({
-            id: item.id +"",
-            x: item.pos.x,
-            y: item.pos.y,
-            type: item.type            
+            p:Psend,
+            i:id_it         
         });
     }   
 }

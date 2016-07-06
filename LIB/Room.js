@@ -40,6 +40,7 @@ function Room(id) {
 	this.first_time_add_ai = true;
 	
 	this.all_tank_pack = [];
+	this.best_players = [];
 }
 
 Room.MAX_HP_ITEMS = 20;
@@ -48,6 +49,7 @@ Room.ITEM_RADIUS = 50;
 Room.MIN_DISTANCE_BETWEEN_PLAYERS = 150;
 Room.MAX_PLAYER = 40;
 Room.MAX_DEATH_LIFE = 50; //50 frames = 2 seconds before disconnected 
+
 
 
 Room.prototype.loadMapAndAI = function () {
@@ -59,6 +61,37 @@ Room.prototype.loadMapAndAI = function () {
     this.ZONE_LIST = obj.Unit; //array of zones, each zone is array of obs
     this.FREE_POSITION_LIST = obj.ArrFreePos;
     console.log("MAP %s IS LOADED-->", this.id);
+}
+
+Room.prototype.updateBestPlayers = function(){	
+	this.best_players =[];
+	var playerArr = []; //array of players to sorts
+	for (var user_id in this.PLAYER_LIST){
+		playerArr.push(this.PLAYER_LIST[user_id])
+	}
+	
+	playerArr.sort(function(player1, player2) { return (player2.score - player1.score);});	
+	
+	var i= 0;
+	var count = 0;
+	while (i < playerArr.length && count < 5){		
+		var player = this.PLAYER_LIST[playerArr[i].id];
+		if ( player !== null){
+            var sc_x=player.score;
+            sc_x=Number(sc_x).toFixed(0);
+            var name=player.lbdisplay+"";
+            if (name.length==0) {
+                name="Guest"+Math.abs(player.id);
+            }
+			var player = {
+				n:name,
+				s:Number(sc_x)
+			};			
+			this.best_players.push(player);			
+			count++;			
+		};
+		i++;
+	}	
 }
 
 Room.prototype.updateTankMap = function() {
@@ -214,6 +247,7 @@ Room.prototype.addingAi = function() {
 	
 	}
 
+		console.log('adding countAddAI ' +countAddAI);
 		for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
 			var pos = this.getFreePos();        
             this.ai_id= this.ai_id - 1;
@@ -569,15 +603,15 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
 
 
 Room.prototype.updateAddingAi =function(delta_time) {
-    this.ai_add_interval = this.ai_add_interval + delta_time;
+    this.ai_add_interval = this.ai_add_interval + delta_time;	
 	if (this.first_time_add_ai){
 		if (this.ai_add_interval > 1){
 			this.addingAi();
 			this.ai_add_interval = 0;
 			this.first_time_add_ai = false;
 		} 		
-	} else {
-		if (this.ai_add_interval > 4) {			
+	} else {		
+		if (this.ai_add_interval > 4) {				
 		        this.addingAi();
 				this.ai_add_interval = 0;
 		}
@@ -729,6 +763,7 @@ Room.prototype.createNewBullets = function (tankfire) {
 }
 
 
+
 Room.prototype.getAllObstaclesAroundMe = function (zone_id) {
     return Utils.getAllObjectsAroundMe(zone_id, this.ZONE_LIST);
 }
@@ -741,6 +776,8 @@ Room.prototype.getAllTanksAroundMe = function (zone_id, zone_tank_arr) {
 Room.prototype.getAllItemsAroundMe = function (zone_id, zone_item_arr) {
     return Utils.getAllObjectsAroundMe(zone_id, zone_item_arr);
 }
+
+
 
 
 module.exports = Room;

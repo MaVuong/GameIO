@@ -83,7 +83,7 @@ Player.prototype.reset = function (x, y) {
 
 Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
-Player.BEGIN_HP = 1980;
+Player.BEGIN_HP = 80;
 Player.BEGIN_AMMO = 140;
 Player.BEGIN_SCORE = 0;
 Player.BEGIN_TANK_SPEED = 50;
@@ -495,7 +495,6 @@ Player.prototype.fireOnTarget = function (level, is_last_bullet) {
 //check if the new score enough to gain new level
 Player.prototype.adjustLevel = function () {
 	
-	console.log(this.score + ' next level score '+ Player.getLevelScore(this.level+1));
     if (this.score > Player.getLevelScore(this.level+1)){
         //if yes, adjust
         this.level++;

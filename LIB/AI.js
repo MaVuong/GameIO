@@ -8,8 +8,7 @@ function AI(id) {
     this.is_shooted = false;
     this.shooter_id = null;
 	this.last_fire = 0;
-	this.type = -1;
-	
+	this.type = -1;	
 }
 
 
@@ -28,6 +27,7 @@ AI.prototype.setBeginLevel = function () {
 	this.max_ammo = Player.getMaxAmmo(this.level);
     this.hp = this.max_hp - Math.floor(Math.random() * 50);	
     this.score = Player.getLevelScore(this.level) + Math.floor(Math.random() * 50);
+	this.tank_moving_speed = Player.getMovingSpeed(this.level);
 }
 
 //change the direction of the AI after next_count_step

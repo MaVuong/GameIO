@@ -83,19 +83,34 @@ Player.prototype.reset = function (x, y) {
 
 Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
-Player.BEGIN_HP = 80;
+Player.BEGIN_HP = 1980;
 Player.BEGIN_AMMO = 140;
-Player.BEGIN_SCORE = 50;
+Player.BEGIN_SCORE = 0;
+Player.BEGIN_TANK_SPEED = 50;
 
 //min score for the level
-Player.getLevelScore = function (level) {
-    var delta_level = Math.ceil(level/5)*50;
-    var level_core = 50 + ((1 + level%5) * delta_level);
-    return level_core;
-}   
+Player.getLevelScore = function (level) {	
+    var delta_level = Math.ceil(level/5)*50;		
+	var level_score = delta_level* ((level-1)%5); //last round
+	var length = Math.floor(level/5)
+	for (var i=1; i<=length; i++){
+		level_score+= 4*(i*50) + (i +1)*50;
+	}		
+    return level_score;	
+}
+	
+	//return level_score;
+
+//0 50 100 150 200 300  350--> 
 
 Player.getMovingSpeed =function(level){
-	return (50 + 2.5 * Math.floor(level/5)); //speed from 50 --> 90
+	if (level <= 10){
+		return Player.BEGIN_TANK_SPEED +((level-1)%10);
+	} else if (level <= 30){
+		return Player.BEGIN_TANK_SPEED + 9 + (level-10)*0.5;
+	} else if (level <= 70){
+		return Player.BEGIN_TANK_SPEED + 19+ (level-30)*0.25;
+	}
 }
 
 //awarded score when shoot on target
@@ -479,6 +494,8 @@ Player.prototype.fireOnTarget = function (level, is_last_bullet) {
 
 //check if the new score enough to gain new level
 Player.prototype.adjustLevel = function () {
+	
+	console.log(this.score + ' next level score '+ Player.getLevelScore(this.level+1));
     if (this.score > Player.getLevelScore(this.level+1)){
         //if yes, adjust
         this.level++;
@@ -498,10 +515,12 @@ Player.prototype.checkItem = function (item) {
         
         if (item.type === 2 && this.hp < this.max_hp){
             this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
-            this.score += Math.round(0.1 * item.value);
+            
+			/*
+			this.score += Math.round(0.1 * item.value);
 			if (this.type === 1){ //only adjust level of real user
 				this.adjustLevel();
-			}
+			}*/
         }           
     }   
 }

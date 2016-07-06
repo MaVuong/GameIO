@@ -186,6 +186,10 @@ Room.prototype.getEstablishedSocket = function () {
     return (this.count_real_user);
 }
 
+Room.prototype.getDeadPlayerNumber = function(){
+	return (Object.keys(this.DEAD_PLAYER_LIST).length);
+}
+
 
 Room.prototype.clearAll = function () {
     this.OBSTACLE_LIST = null;// Object chuong ngai vat
@@ -195,18 +199,17 @@ Room.prototype.clearAll = function () {
     this.last_post_tank_added = null;
 }
 
+/*
+ * This function is for real user only, call when disconnect happen (die or user disconnect)
+ */
 
 Room.prototype.removePlayer = function (player_id) {
 	var player = this.PLAYER_LIST[player_id];
-	if (player === null){
+	if (player === null){ //tank die --> already remove inside frame update
 		return;
-	}
-	if (player.type === 1){
-		this.count_real_user--;
-	} else {
-		this.count_boot--;
-	}
-	
+	}	
+	//disconnected by user, have not die
+	this.count_real_user--; 	
     delete this.PLAYER_LIST[player_id];
 }
 
@@ -240,14 +243,16 @@ Room.prototype.addingAi = function() {
 	
 	if (!this.first_time_add_ai){
 		var available_slots = Room.MAX_PLAYER - (this.count_real_user + this.count_boot);
+		
 		if (available_slots > 0){
 			var temp = Math.ceil(available_slots * Math.random());
+		
 			countAddAI = temp < 10 ? temp : 10;			
 		}
 	
 	}
 
-		console.log('adding countAddAI ' +countAddAI);
+		
 		for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
 			var pos = this.getFreePos();        
             this.ai_id= this.ai_id - 1;
@@ -293,7 +298,7 @@ Room.prototype.resetPlayer = function (player) {
  * other tank/AI/Obtacles/map/ --> change direction (not the same)
  * bullet --> reduce,.../
  *
- *
+ * if tank ==> tank die
  */
 
 Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
@@ -307,14 +312,22 @@ Room.prototype.deleteObjectsFromPreviousStep = function(object_array, isTank) {
     }
     for (var i = 0, l = arrToDelete.length; i < l; i++) {
         //if tank and real player ==> push into the deleted array, will be close socket later
-        if (isTank && arrToDelete[i] > 0) { 
-            //this.resetPlayer(object_array[arrToDelete[i]]);					
-			this.DEAD_PLAYER_LIST[arrToDelete[i]] = object_array[arrToDelete[i]];
-        } 
+        if (isTank) {
+			if (arrToDelete[i] > 0) {             
+				this.DEAD_PLAYER_LIST[arrToDelete[i]] = object_array[arrToDelete[i]];
+				this.count_real_user--;				
+			} else{
+				this.count_boot--;
+			} 
+		}
+			
         delete object_array[arrToDelete[i]]; //delete the object                        
     }
 }
 
+/*
+* real player who still receive update after 2 seconds
+*/
 Room.prototype.deleteDeadPlayer = function() {
 	
     var arrToDelete = [];

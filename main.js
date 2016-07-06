@@ -205,17 +205,6 @@ io.on('connection', function(socket){
 
 });
 
-setInterval(function(){
-	for(var irname  in ROOM_LIST){
-		var roomtmp=ROOM_LIST[irname];
-		var croomusr=roomtmp.getEstablishedSocket();
-		if (croomusr==0) {
-			delete ROOM_LIST[irname];
-			break;
-		}
-	}
-},5000);
-
 
 
 setInterval(function(){
@@ -308,19 +297,20 @@ setInterval(function(){
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
 
-		var up_step=socket.player.update_step;
-		var objectsend={
-			t:socket.player.pack_player,
-			b:socket.player.pack_bullet,
-			e:socket.player.pack_explosion
+		
+			var up_step=socket.player.update_step;
+			var objectsend={
+				t:socket.player.pack_player,
+				b:socket.player.pack_bullet,
+				e:socket.player.pack_explosion			
+			};
+			if (up_step) {
+				objectsend.o=socket.player.pack_obs;
+				objectsend.i=socket.player.pack_item;
+			}
+			sizesend=sizesend+Utils.sizeof(objectsend);
+			socket.emit('UpdatePosition',objectsend);			
 			
-		};
-		if (up_step) {
-			objectsend.o=socket.player.pack_obs;
-			objectsend.i=socket.player.pack_item;
-		}
-		sizesend=sizesend+Utils.sizeof(objectsend);
-		socket.emit('UpdatePosition',objectsend);		
 	}
 },40);
 
@@ -335,8 +325,10 @@ setInterval(function(){
 
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
-		var room = ROOM_LIST[socket.room_name];		
-		socket.emit('UpdateTankMap',room.all_tank_pack);		
+		
+			var room = ROOM_LIST[socket.room_name];		
+			socket.emit('UpdateTankMap',room.all_tank_pack);		
+		
 	}
 
 	//console.log("sizesend: %skb",sizesend/1024);
@@ -347,10 +339,29 @@ setInterval(function(){
 },1000);
 
 
+function deleteEmptyRoom(){
+	var room_arr_to_delete =[];
+	for(var room_name  in ROOM_LIST){
+		var room=ROOM_LIST[room_name];		
+		
+		if (room.getEstablishedSocket()=== 0 && room.getDeadPlayerNumber() === 0 ) {
+			room_arr_to_delete.push(room_name);
+		}
+	}
+	
+	for (var i=0; i < room_arr_to_delete.length; i++){
+		console.log('delete room '+room_arr_to_delete[i]);		
+		delete ROOM_LIST[room_arr_to_delete[i]];
+	}
+	 
+}
+
 //get player with highest score
 
 setInterval(function(){	
 
+	deleteEmptyRoom();
+	
 	for(var room_name  in ROOM_LIST){
 		var room = ROOM_LIST[room_name];		
 		room.updateBestPlayers(); //update the map of all tanks
@@ -358,8 +369,11 @@ setInterval(function(){
 
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
+		//socket can be 
+		
 		var room = ROOM_LIST[socket.room_name];		
-		socket.emit('BestPlayers', room.best_players);				
+		socket.emit('BestPlayers', room.best_players);							
+		
 	}
 
 },5000);

@@ -218,7 +218,7 @@ Bullet.prototype.FindContactPos = function (arrX,arrY) {
             this.pos_contact.y=pos_c.y;
         }
     }
-    if (this.pos_contact.x==-10000) {
+    if (this.pos_contact.x==-10000) {// vì lý do gì đấy khôgn biết được ,mà không thể tìm được giao điểm thì lấy chính vị trí hiện tại của viên đạn 
         this.pos_contact.x=this.pos.x;
         this.pos_contact.y=this.pos.y;
 

@@ -684,10 +684,20 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
         t_xpos=t_xpos*10;
         t_ypos=t_ypos*10;
         var Psend=t_xpos*100000+t_ypos;
+
+        var t_tmp_r=Number(explosion.tank_angle);
+        if (t_tmp_r<0) {
+            t_tmp_r=360+t_tmp_r;
+        }
+        t_tmp_r=Number(t_tmp_r).toFixed(0);
+        t_tmp_r=Number(t_tmp_r);
+        var ex_send=Number(explosion.ex_type)*1000000;
+        ex_send=ex_send+t_tmp_r;
+        ex_send=Number(ex_send);
         this.pack_explosion.push({
             p:Psend,
             t:explosion.tid-0,
-            ta: explosion.tank_angle        
+            e: ex_send    
         });
 
     }

@@ -264,7 +264,7 @@ Room.prototype.addingAi = function() {
             ai.pos.x = pos.x;
             ai.pos.y = pos.y;
             ai.setBeginLevel();
-            console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
+           // console.log("Add new AI :%s pos: %s , %s", this.ai_id, pos.x, pos.y);
             this.PLAYER_LIST[this.ai_id] = ai;
         this.count_boot++;
 		}
@@ -369,6 +369,13 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
         var obstacle_arr = this.getAllObstaclesAroundMe(bullet.zone_id);
         for (var i = 0; i < obstacle_arr.length; i++) {
             bullet.checkCollisionWithObstacle(obstacle_arr[i]);
+            if (bullet.is_remove) {
+                this.count_explosion++;
+                var explosion = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,0);
+                explosion.ex_type=1;
+                this.EXPLOSION_LIST[explosion.id] = explosion;
+            }
+            
         }
 
         //update collision with around tanks

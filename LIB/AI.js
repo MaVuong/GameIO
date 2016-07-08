@@ -22,7 +22,7 @@ AI.SHOOTING_DURATION = 300;
 
 AI.prototype.setBeginLevel = function () {
 	
-    this.level = Math.floor(Math.random() * 20) + 1; //1-20
+    this.level = (Math.random() < 0.3) ? (10 + Math.floor(Math.random() * 10) + 1) : (Math.floor(Math.random() * 10) + 1); //1-20
 	this.max_hp = Player.getMaxHp(this.level);
 	this.max_ammo = Player.getMaxAmmo(this.level);
     this.hp = this.max_hp - Math.floor(Math.random() * 50);	

@@ -1,5 +1,6 @@
 {
   "display_banner":1,
   "display_fullscreen":1,
-  "iOSIP":"gameio.live:2000, chi vi du thoi :) "
+  "gameip":"gameio.live",
+  "port":2020
 }

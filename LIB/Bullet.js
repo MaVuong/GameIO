@@ -94,7 +94,7 @@ Bullet.prototype.checkCollisionWithObstacle = function (obstacle) {
         var arr_x=[obstacle.x-obstacle.w / 2,Number(obstacle.x)+obstacle.w / 2];
         var arr_y=[obstacle.y-obstacle.h / 2,Number(obstacle.y)+obstacle.h / 2];
         this.FindContactPos(arr_x,arr_y);
-		return true;
+		return;
     }
     
     var centerPos={};
@@ -110,10 +110,9 @@ Bullet.prototype.checkCollisionWithObstacle = function (obstacle) {
         var arr_x=[obstacle.x-obstacle.w / 2,Number(obstacle.x)+obstacle.w / 2];
         var arr_y=[obstacle.y-obstacle.h / 2,Number(obstacle.y)+obstacle.h / 2];
         this.FindContactPos(arr_x,arr_y);
-		return true;
     }
     
-    return false;
+    
 }
 
 //check if collision happen, return true or false
@@ -159,10 +158,8 @@ Bullet.prototype.checkCollisionWithTank = function (tank) {
 Bullet.prototype.checkCollisionWithMapEdge = function () {
     if (this.pos.x < -1460 || this.pos.x > 1460 || this.pos.y < -960 || this.pos.y > 960) {
         this.is_remove = true;
-		return true;		
-    } else {
-		return false;
-	}
+		
+    }
 
 }
 

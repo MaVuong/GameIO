@@ -49,7 +49,7 @@ Player.prototype.setBasicParams =function(){
      * =1 in anticlockwise rotating; =2 in clockwise rotating
      */
     this.gun_rotating_status = -1;
-    this.gun_rotating_speed = 300;
+    this.gun_rotating_speed = 450;
 
     this.pack_bullet = [];
     this.pack_player = [];

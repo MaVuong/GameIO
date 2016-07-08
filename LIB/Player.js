@@ -540,71 +540,78 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
     for (var i=0; i < tank_arr.length; i++){
         var tank = tank_arr[i];
         //don't send information as this tank is in collision
+
+        var dt_x_c=Math.abs(Number(tank.pos.x)-this.pos.x);
+        var dt_y_c=Math.abs(Number(tank.pos.y)-this.pos.y);
+        if (dt_x_c<300&&dt_y_c<200) {
+            var t_xpos=Number(tank.pos.x+2000).toFixed(1);
+            var t_ypos=Number(tank.pos.y+2000).toFixed(1);
+            t_xpos=t_xpos*10;
+            t_xpos=Number(t_xpos).toFixed(0);
+            t_ypos=t_ypos*10;
+
+            var t_a=Number(tank.tank_angle);
+            var g_a=Number(tank.gun_angle);
+            if (t_a<0) {
+                t_a=t_a+360;
+            }else if (t_a>=360) {
+                t_a=t_a-360;
+            }
+
+            if (g_a<0) {
+                g_a=g_a+360;
+            }else if(g_a>=360){
+                g_a=g_a-360;
+            }
+            t_a=Number(t_a).toFixed(0);
+            t_a=Number(t_a);
+            g_a=Number(g_a).toFixed(0);
+            g_a=Number(g_a);
+
+            var r_g_t=t_a*1000+g_a;
+            r_g_t=Number(r_g_t);
+            if (send_full_infomation) {
+                r_g_t=r_g_t+1000000;
+            }
+            var Psend=t_xpos*100000+t_ypos;
+
+            var h_p=tank.hp;
+            var m_mo=tank.ammo;
+            if (h_p<0) {
+                h_p=0;
+            }
+            if (m_mo<0) {
+                m_mo=0;
+            }
+            m_mo=Number(m_mo).toFixed(0);
+            h_p=Number(h_p).toFixed(0);
+            var e_hp_ammo=(Number(h_p)*10000)+Number(m_mo);
+            e_hp_ammo=Number(e_hp_ammo).toFixed(0);
+            e_hp_ammo=Number(e_hp_ammo);
+            
+            var s_send=Number(tank.score);
+            var lv_s=Number(tank.level);
+            var lv_s=lv_s*1000000+s_send;
+            lv_s=Number(lv_s);
+            var objx={
+                p: Psend,
+                i: Number(tank.id),
+                s: lv_s,
+                e:e_hp_ammo,
+                r:r_g_t
+            };
+            if (send_full_infomation) {
+                objx.n=tank.lbdisplay+"";
+                var spx=Number(tank.tank_moving_speed).toFixed(0);
+                spx=Number(spx);
+                objx.sp=spx;
+            }
+
+            this.pack_player.push(objx);
+        }
+
      
-        var t_xpos=Number(tank.pos.x+2000).toFixed(1);
-        var t_ypos=Number(tank.pos.y+2000).toFixed(1);
-        t_xpos=t_xpos*10;
-        t_xpos=Number(t_xpos).toFixed(0);
-        t_ypos=t_ypos*10;
-
-        var t_a=Number(tank.tank_angle);
-        var g_a=Number(tank.gun_angle);
-        if (t_a<0) {
-            t_a=t_a+360;
-        }else if (t_a>=360) {
-            t_a=t_a-360;
-        }
-
-        if (g_a<0) {
-            g_a=g_a+360;
-        }else if(g_a>=360){
-            g_a=g_a-360;
-        }
-        t_a=Number(t_a).toFixed(0);
-        t_a=Number(t_a);
-        g_a=Number(g_a).toFixed(0);
-        g_a=Number(g_a);
-
-        var r_g_t=t_a*1000+g_a;
-        r_g_t=Number(r_g_t);
-        if (send_full_infomation) {
-            r_g_t=r_g_t+1000000;
-        }
-        var Psend=t_xpos*100000+t_ypos;
-
-        var h_p=tank.hp;
-        var m_mo=tank.ammo;
-        if (h_p<0) {
-            h_p=0;
-        }
-        if (m_mo<0) {
-            m_mo=0;
-        }
-        m_mo=Number(m_mo).toFixed(0);
-        h_p=Number(h_p).toFixed(0);
-        var e_hp_ammo=(Number(h_p)*10000)+Number(m_mo);
-        e_hp_ammo=Number(e_hp_ammo).toFixed(0);
-        e_hp_ammo=Number(e_hp_ammo);
         
-        var s_send=Number(tank.score);
-        var lv_s=Number(tank.level);
-        var lv_s=lv_s*1000000+s_send;
-        lv_s=Number(lv_s);
-        var objx={
-            p: Psend,
-            i: Number(tank.id),
-            s: lv_s,
-            e:e_hp_ammo,
-            r:r_g_t
-        };
-        if (send_full_infomation) {
-            objx.n=tank.lbdisplay+"";
-            var spx=Number(tank.tank_moving_speed).toFixed(0);
-            spx=Number(spx);
-            objx.sp=spx;
-        }
-
-        this.pack_player.push(objx);
     }
      
     
@@ -617,7 +624,10 @@ Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
     
     for (var i=0; i < obstacle_arr.length; i++){
         var obstacle = obstacle_arr[i];
-        if (Utils.distace2Object(this.pos, obstacle) < 400) {
+
+        var dt_x_c=Math.abs(Number(obstacle.x)-this.pos.x);
+        var dt_y_c=Math.abs(Number(obstacle.y)-this.pos.y);
+        if (dt_x_c<400&&dt_y_c<300) {
             var t_xpos=Number(obstacle.x);
             var t_ypos=Number(obstacle.y);
             t_xpos=Number(t_xpos+2000).toFixed(0);
@@ -640,6 +650,7 @@ Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
             });
         }
 
+
     }
      
 }
@@ -652,19 +663,27 @@ Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
     for (var i=0; i < bullet_arr.length; i++){
         var bullet = bullet_arr[i];
         
-        var t_xpos=Number(bullet.pos.x);
-        var t_ypos=Number(bullet.pos.y);
-        t_xpos=Number(t_xpos+2000).toFixed(0);
-        t_ypos=Number(t_ypos+2000).toFixed(0);
+        var dt_x_c=Math.abs(Number(bullet.pos.x)-this.pos.x);
+        var dt_y_c=Math.abs(Number(bullet.pos.y)-this.pos.y);
 
-        t_xpos=t_xpos*10;
-        t_ypos=t_ypos*10;
-        var Psend=t_xpos*100000+t_ypos;
+        if (dt_x_c<300&&dt_y_c<200) {
+            var t_xpos=Number(bullet.pos.x);
+            var t_ypos=Number(bullet.pos.y);
+            t_xpos=Number(t_xpos+2000).toFixed(0);
+            t_ypos=Number(t_ypos+2000).toFixed(0);
 
-        this.pack_bullet.push({
-            p:Psend,
-            i: Number(bullet.id)
-        });
+            t_xpos=t_xpos*10;
+            t_ypos=t_ypos*10;
+            var Psend=t_xpos*100000+t_ypos;
+
+            this.pack_bullet.push({
+                p:Psend,
+                i: Number(bullet.id)
+            });
+
+        }
+
+        
 
     }
 }
@@ -676,30 +695,37 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
 
-        var t_xpos=Number(explosion.pos.x);
-        var t_ypos=Number(explosion.pos.y);
-        t_xpos=Number(t_xpos+2000).toFixed(0);
-        t_ypos=Number(t_ypos+2000).toFixed(0);
+        var dt_x_c=Math.abs(Number(explosion.pos.x)-this.pos.x);
+        var dt_y_c=Math.abs(Number(explosion.pos.y)-this.pos.y);
 
-        t_xpos=t_xpos*10;
-        t_ypos=t_ypos*10;
-        var Psend=t_xpos*100000+t_ypos;
+        if (dt_x_c<300&&dt_y_c<200) {
+            var t_xpos=Number(explosion.pos.x);
+            var t_ypos=Number(explosion.pos.y);
+            t_xpos=Number(t_xpos+2000).toFixed(0);
+            t_ypos=Number(t_ypos+2000).toFixed(0);
 
-        var t_tmp_r=Number(explosion.tank_angle);
-        if (t_tmp_r<0) {
-            t_tmp_r=360+t_tmp_r;
+            t_xpos=t_xpos*10;
+            t_ypos=t_ypos*10;
+            var Psend=t_xpos*100000+t_ypos;
+
+            var t_tmp_r=Number(explosion.tank_angle);
+            if (t_tmp_r<0) {
+                t_tmp_r=360+t_tmp_r;
+            }
+            t_tmp_r=Number(t_tmp_r).toFixed(0);
+            t_tmp_r=Number(t_tmp_r);
+            var ex_send=Number(explosion.ex_type)*1000000;
+            ex_send=ex_send+t_tmp_r;
+            ex_send=Number(ex_send);
+            this.pack_explosion.push({
+                p:Psend,
+                t:explosion.tid-0,
+                e: ex_send    
+            });
+
         }
-        t_tmp_r=Number(t_tmp_r).toFixed(0);
-        t_tmp_r=Number(t_tmp_r);
-        var ex_send=Number(explosion.ex_type)*1000000;
-        ex_send=ex_send+t_tmp_r;
-        ex_send=Number(ex_send);
-        this.pack_explosion.push({
-            p:Psend,
-            t:explosion.tid-0,
-            e: ex_send    
-        });
 
+        
     }
     
 }

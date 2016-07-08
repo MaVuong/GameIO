@@ -53,9 +53,10 @@ Room.MAX_DEATH_LIFE = 50; //50 frames = 2 seconds before disconnected
 
 
 Room.prototype.loadMapAndAI = function () {
-    fs = require('fs')
+    fs = require('fs');
+    var path = require('path');
     var fs = require('fs');
-    var obj = JSON.parse(fs.readFileSync('./Map/mapgame2.json', 'utf8'));
+    var obj = JSON.parse(fs.readFileSync(path.join(__dirname, '../Map/mapgame2.json')));
     this.OBSTACLE_LIST = obj.mapObstacle;
     this.FREE_ZONE_LIST = obj.mapFreeRect; //free zone to gen items
     this.ZONE_LIST = obj.Unit; //array of zones, each zone is array of obs
@@ -374,6 +375,7 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
                 var explosion = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,0);
                 explosion.ex_type=1;
                 this.EXPLOSION_LIST[explosion.id] = explosion;
+                break;
             }
             
         }
@@ -388,6 +390,12 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
                 if (!tank.is_remove){
                     var is_last_bullet = tank.beShooted(shooter_id); // reduce hp, set the shooter
 					
+                    this.count_explosion++;
+                    var explosion_hit = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,tank.id);
+                    explosion_hit.ex_type=2;
+                    this.EXPLOSION_LIST[explosion_hit.id] = explosion_hit;
+
+
                     if (is_last_bullet){ //generate items and make Explosion
                     
 					
@@ -779,7 +787,14 @@ Room.prototype.createNewBullets = function (tankfire) {
         this.BULLET_LIST[new_bullet.id]=new_bullet;
     }
 
-    
+
+    this.count_explosion++;
+    var gocdg_2=g_angle*3.141592653589/180; 
+    var xbegin_2=tankfire.pos.x+23*Math.cos(gocdg_2)+xt;
+    var ybegin_2=tankfire.pos.y+23*Math.sin(gocdg_2)+yt;
+    var explosion = new Explosion(xbegin_2, ybegin_2, this.count_explosion, 0, 0,tankfire.id);
+    explosion.ex_type=2+shooting_streng;
+    this.EXPLOSION_LIST[explosion.id] = explosion;
 }
 
 

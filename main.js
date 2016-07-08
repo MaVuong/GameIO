@@ -272,8 +272,14 @@ setInterval(function(){
 
 function deleteDeadPlayer(room){
 		var dead_player_arr = room.deleteDeadPlayer();
-		for (var id in dead_player_arr){
-			var socket=SOCKET_LIST[dead_player_arr[id]];	
+		for (var id in dead_player_arr){			
+			var socket=SOCKET_LIST[dead_player_arr[id]];
+			if (socket === null){ //user disconnected before be disconnected
+				return;
+			}
+			if (typeof(socket)=== 'undefined'){
+				return;
+			}
 			var socket_wait_id=socket.wait_id;			
 			delete CODE_LIST[socket_wait_id];
 			delete WAITING_SOCKET_LIST[socket_wait_id];

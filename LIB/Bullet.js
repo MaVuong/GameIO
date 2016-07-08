@@ -104,7 +104,7 @@ Bullet.prototype.checkCollisionWithObstacle = function (obstacle) {
     dtX = Math.abs(centerPos.x - obstacle.x);
     dtY = Math.abs(centerPos.y - obstacle.y);
     if (dtX < kcW && dtY < kcH) {
-        console.log("------------------BBBB-----------------: ");
+        //console.log("------------------BBBB-----------------: ");
         this.is_remove = true;  
 
         var arr_x=[obstacle.x-obstacle.w / 2,Number(obstacle.x)+obstacle.w / 2];
@@ -138,7 +138,7 @@ Bullet.prototype.checkCollisionWithTank = function (tank) {
         dtX = Math.abs(centerPos.x - tank.pos.x);
         dtY = Math.abs(centerPos.y - tank.pos.y);
         if(dtX < kcW && dtY < kcH){
-            console.log("------------------AAAA-----------------");
+           // console.log("------------------AAAA-----------------");
             isCollision= true;
 
             var arr_x=[Number(tank.pos.x)-tank.w / 2,Number(tank.pos.x)+tank.w / 2];
@@ -156,7 +156,7 @@ Bullet.prototype.checkCollisionWithTank = function (tank) {
 
 //mark to remove if collide with map edge
 Bullet.prototype.checkCollisionWithMapEdge = function () {
-    if (this.pos.x < -1450 || this.pos.x > 1450 || this.pos.y < -950 || this.pos.y > 950) {
+    if (this.pos.x < -1460 || this.pos.x > 1460 || this.pos.y < -960 || this.pos.y > 960) {
         this.is_remove = true;
 		
     }

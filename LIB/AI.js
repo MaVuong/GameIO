@@ -10,6 +10,7 @@ function AI(id) {
 	this.last_fire = 0;
 	this.type = -1;	
 	this.name = Utils.getName();
+	console.log('AI name'+this.name);
 }
 
 

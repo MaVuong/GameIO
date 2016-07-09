@@ -8,12 +8,31 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http,{'pingInterval': 2000, 'pingTimeout': 5000});
+
 app.use(express.static(__dirname + '/DataGame'));
 
 app.get('/gameconfig', function(req, res){
-  var file = require('./DataGame/gameconfig.json');
-  res.setHeader('Content-Type', 'application/json');  
-  res.send(file);  
+  var timezone=Number(req.query.local);
+  var objectsend={};
+  objectsend.display_banner=1;
+  objectsend.display_fullscreen=1;
+  objectsend.port=2020;
+  objectsend.timezone=timezone;
+  objectsend.ucode="US";
+
+  objectsend.gameip="104.197.35.76";//ip server dat tai my
+  if (timezone>=(-2)&&timezone<=4) {
+  	objectsend.gameip="104.197.35.76";//ip server dat tai EU
+  	objectsend.ucode="EU";
+  }
+  if (timezone>4) {
+  	objectsend.gameip="104.197.35.76";
+  	objectsend.ucode="ASIA";
+  }
+
+
+  res.setHeader('Content-Type', 'application/json');
+  res.send(""+JSON.stringify(objectsend));  
 });
 
 http.listen(2020, function(){

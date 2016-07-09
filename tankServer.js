@@ -26,11 +26,9 @@ app.get('/gameconfig', function(req, res){
   	objectsend.ucode="EU";
   }
   if (timezone>4) {
-  	objectsend.gameip="104.197.35.76";
+  	objectsend.gameip="104.197.35.76";//ip server o chau A
   	objectsend.ucode="ASIA";
   }
-
-
   res.setHeader('Content-Type', 'application/json');
   res.send(""+JSON.stringify(objectsend));  
 });

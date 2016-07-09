@@ -299,7 +299,6 @@ setInterval(function(){
 		deleteDeadPlayer(room);		//delete dead player from room
 		room.updateFrameStep(FRAME_STEP_INTERVAL); //update every thing in the room
 	}
-
 	for (var socket_name in SOCKET_LIST) {
 		var socket=SOCKET_LIST[socket_name];
 
@@ -318,7 +317,7 @@ setInterval(function(){
 			socket.emit('UpdatePosition',objectsend);			
 			
 	}
-},34);
+},40);
 
 //update all tank in the map
 

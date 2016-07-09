@@ -318,7 +318,7 @@ setInterval(function(){
 			socket.emit('UpdatePosition',objectsend);			
 			
 	}
-},30);
+},34);
 
 //update all tank in the map
 

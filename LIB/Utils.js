@@ -617,6 +617,7 @@ var name_arr=["ArrowAssasin",
 
 
 Utils.getName = function(){
+	var index = Math.floor(Math.abs(name_arr.length * Math.random() -1 ));
 	return name_arr[index];
 }
 

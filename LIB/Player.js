@@ -388,7 +388,10 @@ Player.prototype.checkCollisionWithMapEdge = function () {
         this.changeDirection();
     }
 	
+	var collided = this.is_collided;
 	this.is_collided = false;
+	
+	return collided;
 	
 }
 
@@ -436,7 +439,9 @@ Player.prototype.checkCollisionWithObstacle = function (obstacle) {
         if (this.type === -1){
             this.changeDirection(); 
         }
+		return true;
     }
+	return false;
 }
 
 //check if collision with other tank happen, if yes, adjust position, change direction and

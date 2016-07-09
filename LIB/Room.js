@@ -363,66 +363,69 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
         var bullet = this.BULLET_LIST[key];
 
         //check collision with map edge
-        bullet.checkCollisionWithMapEdge();
-
-        //check collision with around obstacles
-        var obstacle_arr = this.getAllObstaclesAroundMe(bullet.zone_id);
-        for (var i = 0; i < obstacle_arr.length; i++) {
-            bullet.checkCollisionWithObstacle(obstacle_arr[i]);
-            if (bullet.is_remove) {
-                this.count_explosion++;
-                var explosion = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,0);
-                explosion.ex_type=1;
-                this.EXPLOSION_LIST[explosion.id] = explosion;
-                break;
-            }
-            
-        }
-
-        //update collision with around tanks
-        var tank_arr = this.getAllTanksAroundMe(bullet.zone_id, zone_tank_arr);
-        for (var j = 0; j < tank_arr.length; j++) {
-            var tank = tank_arr[j];
-            if ((bullet.player_id !== tank.id) && bullet.checkCollisionWithTank(tank)) {
-                bullet.is_remove = true;
-                
-                if (!tank.is_remove){
-                    var is_last_bullet = tank.beShooted(shooter_id); // reduce hp, set the shooter
-					
-                    this.count_explosion++;
-                    var explosion_hit = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,tank.id);
-                    explosion_hit.ex_type=2;
-                    this.EXPLOSION_LIST[explosion_hit.id] = explosion_hit;
+        var collision = bullet.checkCollisionWithMapEdge();
 
 
-                    if (is_last_bullet){ //generate items and make Explosion
-                    
-					
-                        //generate item      
-                        var tank_arr_1 = this.getAllTanksAroundMe(tank.zone_id, zone_tank_arr);                 
-                        var obstacle_arr_1 = this.getAllObstaclesAroundMe(tank.zone_id);        
-                        this.generateItems(tank, tank_arr_1, obstacle_arr_1);   
-                        
-                        //make explosion
-                        this.count_explosion++;
+		if (!collision){ //only check if bullet has not collided
+			//check collision with around obstacles
+			var obstacle_arr = this.getAllObstaclesAroundMe(bullet.zone_id);
+			for (var i = 0; i < obstacle_arr.length; i++) {
+				collision = bullet.checkCollisionWithObstacle(obstacle_arr[i]);
+				if (collision) {
+					this.count_explosion++;
+					var explosion = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,0);
+					explosion.ex_type=1;
+					this.EXPLOSION_LIST[explosion.id] = explosion;
+					break; //collision happen, stop check for collision with other obstacles
+				}				
+			}
+
+			if (!collision){//only check if bullet has not collided
+				
+				//update collision with around tanks
+				var tank_arr = this.getAllTanksAroundMe(bullet.zone_id, zone_tank_arr);
+				for (var j = 0; j < tank_arr.length; j++) {
+					var tank = tank_arr[j];
+					if ((bullet.player_id !== tank.id) && bullet.checkCollisionWithTank(tank)) { //collision happen
+						bullet.is_remove = true;
 						
-                        var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle,tank.id);
-                        //list of explosion all over the map
-                        this.EXPLOSION_LIST[explosion.id] = explosion;
-                    
-	               }   
-                    
-                    var shooter_id = null;
-                    if (this.PLAYER_LIST.hasOwnProperty(bullet.player_id)) {
-                        var shooter = this.PLAYER_LIST[bullet.player_id];
-                        tank.shooter_id = shooter.id;
-                        shooter.fireOnTarget(tank.level, is_last_bullet); //award the shooter
-                    }                   
-                }
-                
-            }
-        }
-    }
+						if (!tank.is_remove){
+							var is_last_bullet = tank.beShooted(shooter_id); // reduce hp, set the shooter
+							
+							if (is_last_bullet){ //generate items and make Explosion
+							
+							
+								//generate item      
+								var tank_arr_1 = this.getAllTanksAroundMe(tank.zone_id, zone_tank_arr);                 
+								var obstacle_arr_1 = this.getAllObstaclesAroundMe(tank.zone_id);        
+								this.generateItems(tank, tank_arr_1, obstacle_arr_1);   
+								
+								//make explosion
+								this.count_explosion++;
+								
+								var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle,tank.id);
+								//list of explosion all over the map
+								this.EXPLOSION_LIST[explosion.id] = explosion;
+							
+						   }   
+							
+							var shooter_id = null;
+							if (this.PLAYER_LIST.hasOwnProperty(bullet.player_id)) {
+								var shooter = this.PLAYER_LIST[bullet.player_id];
+								tank.shooter_id = shooter.id;
+								shooter.fireOnTarget(tank.level, is_last_bullet); //award the shooter
+							}                   
+						}
+						
+						break; //stop check collision with other tanks
+					}
+				}
+
+			}
+		}
+
+			
+		}
 
 }
 
@@ -540,16 +543,22 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
                 }
             }
         }
-    
-        //check collection with map edge
-        current_tank.checkCollisionWithMapEdge();
 
-        //check collision with obstacle
-        
-        var obstacle_arr = this.getAllObstaclesAroundMe(current_tank.zone_id);        
-        for (var i = 0; i < obstacle_arr.length; i++) {         
-            current_tank.checkCollisionWithObstacle(obstacle_arr[i]);
-        }
+
+	    //check collection with map edge
+        var collided_with_map_edge = current_tank.checkCollisionWithMapEdge();
+
+		if (!collided_with_map_edge){
+			//check collision with obstacle        
+			var obstacle_arr = this.getAllObstaclesAroundMe(current_tank.zone_id);        
+			for (var i = 0; i < obstacle_arr.length; i++) {         
+				var collision = current_tank.checkCollisionWithObstacle(obstacle_arr[i]);
+				if (collision){ 
+					break;
+				}
+			}
+		}
+		
         
         //check if tank get item
         var item_arr = this.getAllItemsAroundMe(current_tank.zone_id, zone_item_arr);

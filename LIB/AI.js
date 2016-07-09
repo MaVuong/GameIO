@@ -9,6 +9,7 @@ function AI(id) {
     this.shooter_id = null;
 	this.last_fire = 0;
 	this.type = -1;	
+	this.name = Utils.getName();
 }
 
 

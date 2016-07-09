@@ -18,7 +18,7 @@ app.get('/config', function(req, res){
   objectsend.display_fullscreen=1;
   objectsend.port=2020;
   objectsend.gameip="104.197.35.76";//ip server dat tai my
-  
+ 
   if (req.query.local !== 'undefined') {
   		var timezone = Number(req.query.local);
 	  if (timezone >= (-2) && timezone <= 4) {

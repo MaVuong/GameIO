@@ -289,11 +289,6 @@ function lineIntersect(x1, y1, x2, y2, x3, y3, x4, y4) {
     return true;
 }
 
-Utils.getName = function(){
-	var index = Math.abs(name_arr.length * Math.random() -1 );
-	return name_arr[index];
-}
-
 //==========name array ==============
 var name_arr=["ArrowAssasin",
 "Avenger",
@@ -619,6 +614,12 @@ var name_arr=["ArrowAssasin",
 "aboundingma",
 "ignorantgranita",
 "thoselime"];
+
+
+Utils.getName = function(){
+	return name_arr[index];
+}
+
 
 
 module.exports = Utils;

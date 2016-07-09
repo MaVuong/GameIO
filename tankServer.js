@@ -11,7 +11,7 @@ var io = require('socket.io')(http,{'pingInterval': 2000, 'pingTimeout': 5000});
 app.use(express.static(__dirname + '/DataGame'));
 
 app.get('/gameconfig', function(req, res){
-  var file = require('/DataGame/gameconfig.json');
+  var file = require('./DataGame/gameconfig.json');
   res.setHeader('Content-Type', 'application/json');  
   res.send(file);  
 });

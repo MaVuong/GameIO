@@ -80,7 +80,7 @@ Room.prototype.updateBestPlayers = function(){
 		if ( player !== null){
             var sc_x=player.score;
             sc_x=Number(sc_x).toFixed(0);
-            var name=player.lbdisplay+"";
+            var name=player.name+"";
             if (name.length==0) {
                 name="Guest"+Math.abs(player.id);
             }
@@ -260,8 +260,7 @@ Room.prototype.addingAi = function() {
             if (this.ai_id < -1000000) {
                 this.ai_id = -1;
             }
-            var ai = new AI(this.ai_id);
-            ai.lbdisplay = "";
+            var ai = new AI(this.ai_id);            
             ai.pos.x = pos.x;
             ai.pos.y = pos.y;
             ai.setBeginLevel();

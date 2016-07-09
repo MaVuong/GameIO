@@ -133,7 +133,7 @@ io.on('connection', function(socket){
 			SOCKET_LIST[socket_wait_id]=socket;
 
 			var player=new Player(socket_wait_id);
-			player.lbdisplay=socket.usrdpl;
+			player.name=socket.usrdpl;
 
 			var room_id=null;
 			for(var key  in ROOM_LIST){

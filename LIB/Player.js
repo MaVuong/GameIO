@@ -7,7 +7,7 @@ function Player(id) {
     this.w = 25;
     this.h = 22;	
     this.name = "USR_" + id;        
-    this.lbdisplay = "";
+    this.name = "";
     
     this.room_id = null;
     this.zone_id = 0;
@@ -601,7 +601,7 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
                 r:r_g_t
             };
             if (send_full_infomation) {
-                objx.n=tank.lbdisplay+"";
+                objx.n=tank.name+"";
                 var spx=Number(tank.tank_moving_speed).toFixed(0);
                 spx=Number(spx);
                 objx.sp=spx;

@@ -239,7 +239,7 @@ Utils.isPointInRetangle =function(x, y, x_rect, y_rect, w, h){
 
 
 Utils.logObject = function (obj) {
-    console.log("info :x=%s , y=%s, w=%s, h=%s", obj.x, obj.y, obj.w, obj.h);
+    //console.log("info :x=%s , y=%s, w=%s, h=%s", obj.x, obj.y, obj.w, obj.h);
 };
 
 

@@ -47,7 +47,7 @@ Room.MAX_HP_ITEMS = 20;
 Room.MAX_AMMO_ITEMS = 20;
 Room.ITEM_RADIUS = 50;
 Room.MIN_DISTANCE_BETWEEN_PLAYERS = 150;
-Room.MAX_PLAYER = 40;
+Room.MAX_PLAYER = 50;
 Room.MAX_DEATH_LIFE = 50; //50 frames = 2 seconds before disconnected 
 
 
@@ -217,7 +217,7 @@ Room.prototype.removePlayer = function (player_id) {
 
 Room.prototype.addPlayer = function (player) {
     this.PLAYER_LIST[player.id] = player;
-    console.log("-----AddPlayer------------");    
+    //console.log("-----AddPlayer------------");    
     var free_pos = this.getFreePos();
     Utils.logObject(free_pos);// luu y: do luoi ve o client luon luon la boi so cua df_cell_draw_width=20 nen o day vi tri x,y cung phai la boi so cua 20
     player.pos.x = Number(free_pos.x);
@@ -225,7 +225,7 @@ Room.prototype.addPlayer = function (player) {
 
     this.last_post_tank_added = free_pos; //store last position the tank added
 	this.count_real_user++;
-    console.log("-----Finish AddPlayer-------------");
+    //console.log("-----Finish AddPlayer-------------");
     // se while cho den khi tim duoc vi tri thic hop, neu khong tim dc thi dat bien status da no ra khoi server
     // thang moi vao thi trong thoi gian 2s se dc bao ve va co hien tuong nhay nhay
     //console.log("----------------->rd: %s vi tri x=%s y=%s", rd, free_pos.x, free_pos.y);

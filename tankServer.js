@@ -84,12 +84,12 @@ io.on('connection', function(socket){
 	socket.on('MyInfo',function(client_data){
 
 		var client_json_data=JSON.parse(client_data);
-		console.log("MyInfo:"+ JSON.stringify(client_json_data));
+		//console.log("MyInfo:"+ JSON.stringify(client_json_data));
 		if (client_json_data.platform===9) {
 			var codeend=new Code();
 			codeend.endcodeiOS();
             var data = {key:codeend.key1,id:socket.wait_id};
-			console.log("Response	:"+ JSON.stringify(data));	
+			//console.log("Response	:"+ JSON.stringify(data));	
 			socket.emit('RequestValidate',{key:codeend.key1,id:socket.wait_id+""});
 			
 			CODE_LIST[waiting_id]=codeend.key2;
@@ -118,7 +118,7 @@ io.on('connection', function(socket){
 	});
 
 	socket.on('MyValidate',function(client_data){
-		console.log('client validate '+ JSON.stringify(client_data));
+		//console.log('client validate '+ JSON.stringify(client_data));
 		if (socket.loaded) {
 			console.log("--------------------> client validate 2 lan lien -------");
 			return;
@@ -137,8 +137,8 @@ io.on('connection', function(socket){
 
 			var room_id=null;
 			for(var key  in ROOM_LIST){
-				console.log("ROOM_LIST[key].countUser: %s",ROOM_LIST[key].getEstablishedSocket());
-				if (ROOM_LIST[key].getEstablishedSocket() < 100) {// user limit =100
+				//console.log("ROOM_LIST[key].countUser: %s",ROOM_LIST[key].getEstablishedSocket());
+				if (ROOM_LIST[key].getEstablishedSocket() < 50) {// user limit =100
 					room_id=key;
 					break;
 				}
@@ -301,7 +301,7 @@ function deleteDeadPlayer(room){
 			delete WAITING_SOCKET_LIST[socket_wait_id];
 			delete SOCKET_LIST[socket_wait_id];
 			socket.is_removed = true;
-			console.log('server disconnect =======socket.is_removed ' +socket.is_removed);
+			//console.log('server disconnect =======socket.is_removed ' +socket.is_removed);
 			socket.disconnect(true);			
 			
 		}
@@ -361,7 +361,10 @@ setInterval(function(){
 },1000);
 
 
-function deleteEmptyRoom(){
+
+
+setInterval(function(){	
+
 	var room_arr_to_delete =[];
 	for(var room_name  in ROOM_LIST){
 		var room=ROOM_LIST[room_name];		
@@ -375,15 +378,15 @@ function deleteEmptyRoom(){
 		console.log('delete room '+room_arr_to_delete[i]);		
 		delete ROOM_LIST[room_arr_to_delete[i]];
 	}
-	 
-}
+	
+
+},3600000);//60x60x1000
+
 
 //get player with highest score
 
 setInterval(function(){	
 
-	deleteEmptyRoom();
-	
 	for(var room_name  in ROOM_LIST){
 		var room = ROOM_LIST[room_name];		
 		room.updateBestPlayers(); //update the map of all tanks

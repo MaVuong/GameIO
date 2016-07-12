@@ -54,7 +54,7 @@ io.on('connection', function(socket){
 		waiting_id=1;
 	}
 	var address = socket.handshake.address;
- 	console.log('New connection from ' + address.address + ':' + address.port);
+ 	console.log('New connection from ' + socket.request.connection.remoteAddress);
 
 	socket.wait_id=waiting_id;
 	socket.validatetime=MAX_TRY;

@@ -27,12 +27,12 @@ app.get('/config', function(req, res){
 	  	objectsend.gameip="104.199.172.133";//ip server o chau A   : 104.199.172.133
 	  }			
   }
-  
+  objectsend.yourip=req.connection.remoteAddress;
   res.setHeader('Content-Type', 'application/json');
   res.send(""+JSON.stringify(objectsend));  
 });
 
-http.listen(2020, function(){
+http.listen(2020,'::', function(){
 	console.log('listening on : 2020');
 });
 

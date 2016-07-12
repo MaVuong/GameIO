@@ -17,17 +17,16 @@ app.get('/config', function(req, res){
   objectsend.display_banner=1;
   objectsend.display_fullscreen=1;
   objectsend.port=2020;
-  objectsend.gameip="104.197.35.76";//ip server dat tai my
+  objectsend.gameip="tank.gameio.live";//ip server dat tai my
  
   if (req.query.local !== 'undefined') {
   		var timezone = Number(req.query.local);
 	  if (timezone >= (-2) && timezone <= 4) {
-	  	objectsend.gameip="104.155.45.73";//ip server dat tai EU:  104.155.45.73
+	  	objectsend.gameip="tankeu.gameio.live";//ip server dat tai EU:  104.155.45.73
 	  } else if (timezone > 4) {
-	  	objectsend.gameip="104.199.172.133";//ip server o chau A   : 104.199.172.133
+	  	objectsend.gameip="tankasia.gameio.live";//ip server o chau A   : 104.199.172.133
 	  }			
   }
-  objectsend.yourip=req.connection.remoteAddress;
   res.setHeader('Content-Type', 'application/json');
   res.send(""+JSON.stringify(objectsend));  
 });
@@ -54,8 +53,7 @@ io.on('connection', function(socket){
 		waiting_id=1;
 	}
 	var address = socket.handshake.address;
- 	console.log('New connection from ' + socket.request.connection.remoteAddress);
-
+ 	
 	socket.wait_id=waiting_id;
 	socket.validatetime=MAX_TRY;
 	socket.loaded=false;

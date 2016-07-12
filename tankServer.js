@@ -33,7 +33,7 @@ app.get('/config', function(req, res){
 });
 
 http.listen(2020,'::', function(){
-	console.log('listening on : 2020');
+	console.log('---------------->listening on : 2020');
 });
 
 var CODE_LIST={};

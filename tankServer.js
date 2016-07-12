@@ -53,7 +53,9 @@ io.on('connection', function(socket){
 	if (waiting_id>99999999) {
 		waiting_id=1;
 	}
-	
+	var address = socket.handshake.address;
+ 	console.log('New connection from ' + address.address + ':' + address.port);
+
 	socket.wait_id=waiting_id;
 	socket.validatetime=MAX_TRY;
 	socket.loaded=false;

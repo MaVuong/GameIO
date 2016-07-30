@@ -464,8 +464,8 @@ Player.prototype.checkCollisionWithOtherTank = function (tank) {
     var kcW = this.w / 2 + tank.w / 2;
     var kcH = this.h / 2 + tank.h / 2;
     if (dtX < kcW && dtY < kcH) {
-        var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
-        this.adjustPosition(overlapDistance);
+        //var overlapDistance = (this.moving_direction % 2 === 1) ? kcW - dtX : kcH - dtY;
+        //this.adjustPosition(overlapDistance);
         
         //only boot automatically change direction 
         if (this.type === -1){

@@ -164,9 +164,9 @@ Room.prototype.updateFrameStep = function(delta_time, count_frame) {
 	//increase death_life count of dead tanks
 	this.increaseDeadTankCountTime();
 	
-    this.updateAi(zone_tank_arr); //change the direction if a number is reached
+    //this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
-    this.updateAddingAi(delta_time);
+    //this.updateAddingAi(delta_time);
 
 
     //update gun angle and fire when finish rotate the gun
@@ -374,7 +374,9 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
 			for (var i = 0; i < obstacle_arr.length; i++) {
 				collision = bullet.checkCollisionWithObstacle(obstacle_arr[i]);
 				if (collision) {
+
 					this.count_explosion++;
+                    console.log("explosion "+this.count_explosion);
                     if(this.count_explosion>1000){
                         this.count_explosion=1;
                     }
@@ -633,6 +635,7 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr, count_
             tank.updateAllExplosionsAroundMe(zone_explosion_arr, count_frame);
         }
     }
+
 	
 	for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
         var tank = this.DEAD_PLAYER_LIST[tankid];			

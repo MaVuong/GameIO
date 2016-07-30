@@ -343,7 +343,9 @@ setInterval(function(){
 					b:socket.player.pack_bullet,
 					e:socket.player.pack_explosion
 				};
-				
+				if (socket.player.pack_explosion.length >0)
+
+					console.log("server send, count_frame "+count_frame +"|"+JSON.stringify(socket.player.pack_explosion));
 				if (count_frame % 4 === 0 ){
 					objectsend.i=socket.player.pack_item;
 				}

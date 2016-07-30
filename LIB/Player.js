@@ -19,7 +19,7 @@ function Player(id) {
 
 Player.prototype.setBasicParams =function(){
 	this.score = Player.BEGIN_SCORE;
-    this.level = 40;
+    this.level = 1;
     
 	this.ammo = Player.BEGIN_AMMO;
     this.max_ammo = Player.BEGIN_AMMO;		
@@ -55,6 +55,7 @@ Player.prototype.setBasicParams =function(){
     this.pack_player = [];
     this.pack_item = [];
     this.pack_obs = [];
+    this.pack_explosion = [];
 
     this.type = 1;// 1 la player binh thuong, -1 la Boot
 
@@ -90,7 +91,7 @@ Player.prototype.reset = function (x, y) {
 
 Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
-Player.BEGIN_HP = 8000;
+Player.BEGIN_HP = 80;
 Player.BEGIN_AMMO = 140;
 Player.BEGIN_SCORE = 0;
 Player.BEGIN_TANK_SPEED = 50;
@@ -549,7 +550,7 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
         send_full_infomation=true;
         this.time_cout_update=0;
     }
-    console.log("this.time_cout_update: %s",this.time_cout_update);
+    //console.log("this.time_cout_update: %s",this.time_cout_update);
     this.pack_player =[];
     var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
     for (var i=0; i < tank_arr.length; i++){
@@ -760,10 +761,14 @@ Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
 
 Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, count_frame){
     var explosion_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_explosion_list);
-    if (count_frame % 2 === 0){
+
+    if (count_frame % 2 === 1){
 		this.pack_explosion = [];	
 	}
-	
+
+
+	if (this.pack_explosion.length > 0)
+        console.log("before push "+count_frame +"|" +JSON.stringify(this.pack_explosion));
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
 
@@ -787,6 +792,9 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, cou
                 t:explosion.tid,// tank id
                 e: explosion.ex_type
             });
+
+
+            console.log("update push explosion: count_frame "+count_frame +"|" +JSON.stringify(this.pack_explosion));
 
         }
         

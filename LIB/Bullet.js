@@ -21,12 +21,13 @@ function Bullet(player_id, bullet_id) {
     this.line_stt=0;
     this.b=0;
     this.a=0;
+    this.degreeAngle=0;
 }
 
 
 //set move direction: pos + angle (in degree)
 Bullet.prototype.setMoveDirection = function (angle, begin_pos) {
-    
+    this.degreeAngle=angle;
     this.angle = (angle * 3.141592) / 180;
     this.pos = begin_pos;
     this.lastPos.x=this.pos.x;
@@ -158,7 +159,7 @@ Bullet.prototype.checkCollisionWithTank = function (tank) {
 
 //mark to remove if collide with map edge
 Bullet.prototype.checkCollisionWithMapEdge = function () {
-    if (this.pos.x < -1460 || this.pos.x > 1460 || this.pos.y < -960 || this.pos.y > 960) {
+    if (this.pos.x < -1475 || this.pos.x > 1475 || this.pos.y < -975 || this.pos.y > 975) {
         this.is_remove = true;
 	return true;		
     } else {

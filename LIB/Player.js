@@ -19,7 +19,7 @@ function Player(id) {
 
 Player.prototype.setBasicParams =function(){
 	this.score = Player.BEGIN_SCORE;
-    this.level = 1;
+    this.level = 40;
     
 	this.ammo = Player.BEGIN_AMMO;
     this.max_ammo = Player.BEGIN_AMMO;		
@@ -71,6 +71,13 @@ Player.prototype.setBasicParams =function(){
 
     this.count_skip=0;
     this.update_step=false;
+
+    this.isStopMove=true;
+
+    var arrcode=["ad","af","bh","ca","cn","jp","kr","dz","es","fr","gb","hk","vi","ru","us","us","th","tw","vn","tk","us"];
+    var lenght=arrcode.length;
+    var rid=parseInt(Math.random()*lenght);
+    this.ccode=arrcode[rid];
 }
 
 
@@ -83,7 +90,7 @@ Player.prototype.reset = function (x, y) {
 
 Player.MAX_LEVEL = 80;
 Player.DELTA_HP_REDUCED_BE_SHOOTED = 16;//when shooted
-Player.BEGIN_HP = 80;
+Player.BEGIN_HP = 8000;
 Player.BEGIN_AMMO = 140;
 Player.BEGIN_SCORE = 0;
 Player.BEGIN_TANK_SPEED = 50;
@@ -261,7 +268,7 @@ Player.prototype.setNewDirection = function (new_direction) {
 
 Player.prototype.updatePosition = function (delta_time) {   
     this.count_skip=this.count_skip+1; 
-    if (this.count_skip>8) {
+    if (this.count_skip>3) {
         this.count_skip=0;
         this.update_step=true;
     }else{
@@ -297,11 +304,12 @@ Player.prototype.updatePosition = function (delta_time) {
 
 
     if (this.tank_rotating_status > 0) {  //need to stop rotate before moving
+        this.isStopMove=true;
         return;
     }
 
     //console.log(this.moving_direction +'|' + this.pos.x + ' before update position '+this.pos.y);
-    
+    this.isStopMove=false;
 	this.dtmove=this.tank_moving_speed * delta_time;
 
 		//need to find reason why x/y was converted to string
@@ -366,19 +374,19 @@ Player.prototype.adjustPosition = function (distance_to_adjust) {
  */
 Player.prototype.checkCollisionWithMapEdge = function () {
     this.is_collided = false;
-    if (this.pos.x < -1450) {
-        this.pos.x = -1450;
+    if (this.pos.x < -1465) {
+        this.pos.x = -1465;
         this.is_collided = true;
-    } else if (this.pos.x > 1450) {
-        this.pos.x = 1450;
+    } else if (this.pos.x > 1465) {
+        this.pos.x = 1465;
         this.is_collided = true;
     }
 
-    if (this.pos.y < -950) {
-        this.pos.y = -950;
+    if (this.pos.y < -965) {
+        this.pos.y = -965;
         this.is_collided = true;
-    } else if (this.pos.y > 950) {
-        this.pos.y = 950;
+    } else if (this.pos.y > 965) {
+        this.pos.y = 965;
         this.is_collided = true;
     }
     if (this.is_collided) {
@@ -389,6 +397,9 @@ Player.prototype.checkCollisionWithMapEdge = function () {
     }
 	
 	var collided = this.is_collided;
+    if(this.is_collided){
+        this.isStopMove=true;
+    }
 	this.is_collided = false;
 	
 	return collided;
@@ -439,6 +450,7 @@ Player.prototype.checkCollisionWithObstacle = function (obstacle) {
         if (this.type === -1){
             this.changeDirection(); 
         }
+        this.isStopMove=true;
 		return true;
     }
 	return false;
@@ -510,22 +522,20 @@ Player.prototype.adjustLevel = function () {
 }
 
 
+
 Player.prototype.checkItem = function (item) {
-    if (Utils.distace2Object(item.pos, this.pos) < 30 && !item.is_moving){
+	
+	
+    if (Utils.distace2Object(item.pos, this.pos) < 50 && !item.is_moving){		
         item.is_remove = true;
         if (item.type === 1 && this.ammo < this.max_ammo){
             this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;
         }
         
         if (item.type === 2 && this.hp < this.max_hp){
-            this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;
-            
-			/*
-			this.score += Math.round(0.1 * item.value);
-			if (this.type === 1){ //only adjust level of real user
-				this.adjustLevel();
-			}*/
-        }           
+            this.hp = (this.hp + item.value < this.max_hp) ? this.hp + item.value : this.max_hp;            
+        }
+					
     }   
 }
 
@@ -535,26 +545,35 @@ Player.prototype.checkItem = function (item) {
 Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
     this.time_cout_update=this.time_cout_update+1;
     var send_full_infomation=false;
-    if (this.time_cout_update>=20) {
+    if (this.time_cout_update>=10) {
         send_full_infomation=true;
         this.time_cout_update=0;
     }
-
+    console.log("this.time_cout_update: %s",this.time_cout_update);
     this.pack_player =[];
     var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
     for (var i=0; i < tank_arr.length; i++){
         var tank = tank_arr[i];
         //don't send information as this tank is in collision
-
         var dt_x_c=Math.abs(Number(tank.pos.x)-this.pos.x);
         var dt_y_c=Math.abs(Number(tank.pos.y)-this.pos.y);
-        if (dt_x_c<300&&dt_y_c<200) {
+        if (dt_x_c<300&&dt_y_c<200) {//gioi han chi la 600x400 tren man hinh thuong va retina la 1200x800
+
+            var dirMV=tank.moving_direction;
+            if(tank.tank_rotating_status>0||tank.isStopMove){
+                dirMV=0;
+            }
+            dirMV=parseInt(dirMV);
+
             var t_xpos=Number(tank.pos.x+2000).toFixed(1);
             var t_ypos=Number(tank.pos.y+2000).toFixed(1);
             t_xpos=t_xpos*10;
             t_xpos=Number(t_xpos).toFixed(0);
             t_ypos=t_ypos*10;
+            var Psend=t_xpos*100000+t_ypos;
+            Psend=parseInt(Psend);
 
+            //---------------Gun + tank Angle
             var t_a=Number(tank.tank_angle);
             var g_a=Number(tank.gun_angle);
             if (t_a<0) {
@@ -568,18 +587,15 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             }else if(g_a>=360){
                 g_a=g_a-360;
             }
-            t_a=Number(t_a).toFixed(0);
-            t_a=Number(t_a);
-            g_a=Number(g_a).toFixed(0);
-            g_a=Number(g_a);
-
+            t_a=parseInt(t_a);
+            g_a=parseInt(g_a);
             var r_g_t=t_a*1000+g_a;
-            r_g_t=Number(r_g_t);
-            if (send_full_infomation) {
-                r_g_t=r_g_t+1000000;
+            if(dirMV>0){
+                dirMV=dirMV*1000000;
+                r_g_t=r_g_t+dirMV;
             }
-            var Psend=t_xpos*100000+t_ypos;
 
+            //------------Hp+Ammo
             var h_p=tank.hp;
             var m_mo=tank.ammo;
             if (h_p<0) {
@@ -588,35 +604,58 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
             if (m_mo<0) {
                 m_mo=0;
             }
-            m_mo=Number(m_mo).toFixed(0);
-            h_p=Number(h_p).toFixed(0);
-            var e_hp_ammo=(Number(h_p)*10000)+Number(m_mo);
-            e_hp_ammo=Number(e_hp_ammo).toFixed(0);
-            e_hp_ammo=Number(e_hp_ammo);
-            
-            var s_send=Number(tank.score);
-            var lv_s=Number(tank.level);
-            var lv_s=lv_s*1000000+s_send;
-            lv_s=Number(lv_s);
+            m_mo=parseInt(m_mo);
+            h_p=parseInt(h_p);
+            var e_hp_ammo=(h_p*10000)+m_mo;
+
+
+
+            //-------------score+level
+            var s_send=parseInt(tank.score);
+            var lv_s=parseInt(tank.level);
+            lv_s=lv_s*1000000+s_send;
+
+
+
+
             var objx={
                 p: Psend,
-                i: Number(tank.id),
+                i: parseInt(tank.id),// bao gom ca so am lan so duong
                 s: lv_s,
                 e:e_hp_ammo,
-                r:r_g_t
+                r:r_g_t,
+                m:parseInt(tank.tank_moving_speed)
             };
             if (send_full_infomation) {
-                objx.n=tank.name+"";
-                var spx=Number(tank.tank_moving_speed).toFixed(0);
-                spx=Number(spx);
-                objx.sp=spx;
-            }
+                
 
+                var name=tank.name;
+                if(name.trim().length<1){
+                    name="Guest"+Math.abs(parseInt(tank.id));
+                }
+                objx.n=name+"";
+                objx.c=tank.ccode;
+            }
             this.pack_player.push(objx);
         }
+        /*
 
-     
-        
+        this.pack_player.push({
+            x: Number(tank.pos.x).toFixed(2) + "",
+            y: Number(tank.pos.y).toFixed(2) + "",
+            id: tank.id + "",
+            r: Number(tank.tank_angle).toFixed(2) + "",
+            //typeTank:player_tmp.typeTank,
+            lbdisplay: tank.lbdisplay,
+            level: tank.level + "",
+            score: tank.score + "",
+            hp: tank.hp + "",
+            dir:dirMV,
+            ammo: tank.ammo+"",
+            sp: this.tank_moving_speed+"",
+            gR: tank.gun_angle + ""
+        });
+        */
     }
      
     
@@ -655,6 +694,17 @@ Player.prototype.updateAllObstaclesAroundMe = function(full_obstacle_list){
             });
         }
 
+        //if (Utils.distace2Object(this.pos, obstacle) < 400) {
+        //    var strid=obstacle.id.replace("obj","");
+        //    this.pack_obs.push({
+        //        x: obstacle.x,
+        //        y: obstacle.y,
+        //        w: obstacle.w,
+        //        h: obstacle.h,
+        //        id: strid
+        //    });
+        //}
+
 
     }
      
@@ -667,7 +717,7 @@ Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
     this.pack_bullet = [];
     for (var i=0; i < bullet_arr.length; i++){
         var bullet = bullet_arr[i];
-        
+
         var dt_x_c=Math.abs(Number(bullet.pos.x)-this.pos.x);
         var dt_y_c=Math.abs(Number(bullet.pos.y)-this.pos.y);
 
@@ -681,22 +731,39 @@ Player.prototype.updateAllBulletsAroundMe = function(full_bullet_list){
             t_ypos=t_ypos*10;
             var Psend=t_xpos*100000+t_ypos;
 
+            var idbullet=parseInt(bullet.id);// chi gioi han tu 1-1000 xem Room dong 778
+
+            var bullet_angle=parseInt(bullet.degreeAngle);
+            bullet_angle=bullet_angle*100000;// max=36000000
+            bullet_angle=bullet_angle+idbullet;
             this.pack_bullet.push({
                 p:Psend,
-                i: Number(bullet.id)
+                i:bullet_angle
             });
 
         }
 
-        
+
+
+        //this.pack_bullet.push({
+        //    x: parseInt(bullet.pos.x),
+        //    y: parseInt(bullet.pos.y),
+        //    // opp: bullet.opacity,
+        //    ag:parseInt(bullet.degreeAngle),
+        //    id: bullet.id
+        //});
+
 
     }
 }
 
 
-Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
+Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, count_frame){
     var explosion_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_explosion_list);
-    this.pack_explosion = [];
+    if (count_frame % 2 === 0){
+		this.pack_explosion = [];	
+	}
+	
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
 
@@ -713,23 +780,15 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
             t_ypos=t_ypos*10;
             var Psend=t_xpos*100000+t_ypos;
 
-            var t_tmp_r=Number(explosion.tank_angle);
-            if (t_tmp_r<0) {
-                t_tmp_r=360+t_tmp_r;
-            }
-            t_tmp_r=Number(t_tmp_r).toFixed(0);
-            t_tmp_r=Number(t_tmp_r);
-            var ex_send=Number(explosion.ex_type)*1000000;
-            ex_send=ex_send+t_tmp_r;
-            ex_send=Number(ex_send);
+
+
             this.pack_explosion.push({
                 p:Psend,
-                t:explosion.tid-0,
-                e: ex_send    
+                t:explosion.tid,// tank id
+                e: explosion.ex_type
             });
 
         }
-
         
     }
     
@@ -738,6 +797,15 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list){
 Player.prototype.updateAllItemsAroundMe = function(full_item_list){
     var item_arr =  Utils.getAllObjectsAroundMe(this.zone_id, full_item_list);
     this.pack_item = [];
+
+    //var objitem_test={};
+    //objitem_test.id=3;
+    //objitem_test.pos={};
+    //objitem_test.pos.x=100;
+    //objitem_test.pos.y=50;
+    //objitem_test.type=2;
+    //item_arr=[objitem_test];
+
     for (var i=0; i < item_arr.length; i++){
         var item = item_arr[i];
         var t_xpos=Number(item.pos.x);
@@ -748,16 +816,24 @@ Player.prototype.updateAllItemsAroundMe = function(full_item_list){
         t_ypos=t_ypos*10;
         var Psend=t_xpos*100000+t_ypos;
 
-        var id_it=Number(item.id).toFixed(0);
-        
-        var type_it=Number(item.type).toFixed(0);
-        id_it=Number(id_it)*1000000+Number(type_it); 
-        id_it=Number(id_it);
+        var id_it=parseInt(item.id);// id cua item chi tu 1-10000
+
+        var type_it=parseInt(item.type);
+        type_it=type_it*100000+id_it;
+
         this.pack_item.push({
             p:Psend,
-            i:id_it         
+            i:type_it
         });
-    }   
+    }
+
+    //this.pack_item.push({
+    //    id: 3,
+    //    x: 100,
+    //    y: 50,
+    //    type:2
+    //});
+
 }
 
 Player.prototype.resetPackArr = function(){

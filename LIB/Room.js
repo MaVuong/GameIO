@@ -16,13 +16,13 @@ function Room(id) {
 	
 	
     this.EXPLOSION_LIST = {};
-    this.count_explosion = 0;
+    this.count_explosion = 1;
 
     this.ITEM_LIST = {};
-    this.count_item = 0;
+    this.count_item = 1;
     
     this.BULLET_LIST = {};
-    this.count_bullet = 0;
+    this.count_bullet = 1;
 
     this.OBSTACLE_LIST = null;// list of obstacles
     this.FREE_ZONE_LIST = null; //list of free zones to generate random items
@@ -106,7 +106,7 @@ Room.prototype.updateTankMap = function() {
 	}
 }	
 
-Room.prototype.updateFrameStep = function(delta_time) {
+Room.prototype.updateFrameStep = function(delta_time, count_frame) {
 
     var zone_tank_arr = [];//array of zones, each zone is array of tanks
     var zone_bullet_arr = []; //array of zones, each zone is array of bullets    
@@ -133,7 +133,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
 	
 	
     //update all explosion around me, explosion is calculated from previous frame, need to delete before calculate new explosions
-    this.updateExplosionsAroundTanks(zone_explosion_arr);
+    this.updateExplosionsAroundTanks(zone_explosion_arr, count_frame);
 
     //reset to calculate new explosions
 	this.EXPLOSION_LIST = [];
@@ -155,7 +155,7 @@ Room.prototype.updateFrameStep = function(delta_time) {
     this.checkCollisionOfBullets(zone_tank_arr);
 
     //check collision between tanks, update the explosion list
-    this.checkCollisionOfTanks(zone_tank_arr, zone_item_arr);
+    this.checkCollisionOfTanks(zone_tank_arr, zone_item_arr, count_frame);
 
     //this.updateItemsAroundTanks(zone_item_arr);
 
@@ -172,7 +172,6 @@ Room.prototype.updateFrameStep = function(delta_time) {
     //update gun angle and fire when finish rotate the gun
     this.updateGunAngleAndFire(delta_time);
     
-	//this.generateRandomItems();
 }
 
 
@@ -222,6 +221,9 @@ Room.prototype.addPlayer = function (player) {
     Utils.logObject(free_pos);// luu y: do luoi ve o client luon luon la boi so cua df_cell_draw_width=20 nen o day vi tri x,y cung phai la boi so cua 20
     player.pos.x = Number(free_pos.x);
     player.pos.y = Number(free_pos.y);
+
+    player.pos.x=0;
+    player.pos.y=0;
 
     this.last_post_tank_added = free_pos; //store last position the tank added
 	this.count_real_user++;
@@ -373,10 +375,13 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
 				collision = bullet.checkCollisionWithObstacle(obstacle_arr[i]);
 				if (collision) {
 					this.count_explosion++;
-					var explosion = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,0);
-					explosion.ex_type=1;
-					this.EXPLOSION_LIST[explosion.id] = explosion;
-					break; //collision happen, stop check for collision with other obstacles
+                    if(this.count_explosion>1000){
+                        this.count_explosion=1;
+                    }
+                    var explosion = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,0);
+                    explosion.ex_type=1;
+                    this.EXPLOSION_LIST[explosion.id] = explosion;
+                    break; //collision happen, stop check for collision with other obstacles
 				}				
 			}
 
@@ -388,6 +393,14 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
 					var tank = tank_arr[j];
 					if ((bullet.player_id !== tank.id) && bullet.checkCollisionWithTank(tank)) { //collision happen
 						bullet.is_remove = true;
+
+                        this.count_explosion++;
+                        if(this.count_explosion>1000){
+                            this.count_explosion=1;
+                        }
+                        var explosion_hit = new Explosion(bullet.pos_contact.x, bullet.pos_contact.y, this.count_explosion, 0, 0,tank.id);
+                        explosion_hit.ex_type=2;
+                        this.EXPLOSION_LIST[explosion_hit.id] = explosion_hit;
 						
 						if (!tank.is_remove){
 							var is_last_bullet = tank.beShooted(shooter_id); // reduce hp, set the shooter
@@ -401,11 +414,14 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
 								this.generateItems(tank, tank_arr_1, obstacle_arr_1);   
 								
 								//make explosion
-								this.count_explosion++;
-								
-								var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle,tank.id);
-								//list of explosion all over the map
-								this.EXPLOSION_LIST[explosion.id] = explosion;
+                                this.count_explosion++;
+                                if(this.count_explosion>1000){
+                                    this.count_explosion=1;
+                                }
+                                
+                                var explosion = new Explosion(tank.pos.x, tank.pos.y, this.count_explosion, tank.tank_angle, tank.gun_angle,tank.id);
+                                //list of explosion all over the map
+                                this.EXPLOSION_LIST[explosion.id] = explosion;
 							
 						   }   
 							
@@ -440,7 +456,10 @@ Room.prototype.generateItems = function(tank, tank_arr, obstacle_arr){
         var pos = Utils.getRandomPoint(tank.pos.x, tank.pos.y, Room.ITEM_RADIUS, tank_arr, obstacle_arr);
 		if (pos !== null){
 			var type = (Math.random() < 0.5)? 1 : 2;
-			this.count_item ++;        
+			this.count_item ++;
+            if(this.count_item>10000){
+                this.count_item=1;
+            }
             var item = new Item(tank.pos.x, tank.pos.y, pos.x, pos.y, pos.angle, this.count_item, type);			
             this.ITEM_LIST[item.id] = item;			
         }
@@ -476,7 +495,9 @@ Room.prototype.generateRandomItems = function(){
     var free_zone_cout=this.FREE_ZONE_LIST.length;
     for (var i = 0; i < c; i++) {// c min=1,max=2;
         this.count_item ++;
-
+        if(this.count_item>10000){
+            this.count_item=1;
+        }
         var i_type=i+1;
         var random_index= Math.floor(Math.random() * free_zone_cout);
         var rect_tmp=this.FREE_ZONE_LIST[random_index];
@@ -499,7 +520,7 @@ Room.prototype.generateRandomItems = function(){
  * result of this step is list of all explosion, explosion is putted into wright array
  * player is marked with isCollided and will be reduce the hp next frame
  */
-Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
+Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr, count_frame){
     
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
         var current_tank = this.PLAYER_LIST[tankid];
@@ -515,6 +536,9 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
                     if (Utils.distace2Object(current_tank.pos, other_tank.pos) < 100) {
                         if (current_tank.checkCollisionWithOtherTank(other_tank)) {
                             this.count_explosion++;
+                            if(this.count_explosion>1000){
+                                this.count_explosion=1;
+                            }
                             
                             //Explosion(x, y, id, tank_angle, gun_angle, zone_id) 
 							var dead_tank = (current_tank.hp > other_tank.hp)? other_tank : current_tank;                         		                                                           
@@ -535,7 +559,6 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
 							var tank_arr_1 = this.getAllTanksAroundMe(dead_tank.zone_id, zone_tank_arr);                 
 							var obstacle_arr_1 = this.getAllObstaclesAroundMe(dead_tank.zone_id);        
 							this.generateItems(dead_tank, tank_arr_1, obstacle_arr_1);   
-
 							
                             break;
                         }
@@ -546,19 +569,20 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr){
 
 
 	    //check collection with map edge
-        var collided_with_map_edge = current_tank.checkCollisionWithMapEdge();
 
-		if (!collided_with_map_edge){
-			//check collision with obstacle        
-			var obstacle_arr = this.getAllObstaclesAroundMe(current_tank.zone_id);        
-			for (var i = 0; i < obstacle_arr.length; i++) {         
-				var collision = current_tank.checkCollisionWithObstacle(obstacle_arr[i]);
-				if (collision){ 
-					break;
+			var collided_with_map_edge = current_tank.checkCollisionWithMapEdge();
+
+			if (!collided_with_map_edge){
+				//check collision with obstacle        
+				var obstacle_arr = this.getAllObstaclesAroundMe(current_tank.zone_id);        
+				for (var i = 0; i < obstacle_arr.length; i++) {         
+					var collision = current_tank.checkCollisionWithObstacle(obstacle_arr[i]);
+					if (collision){ 
+						break;
+					}
 				}
 			}
-		}
-		
+			
         
         //check if tank get item
         var item_arr = this.getAllItemsAroundMe(current_tank.zone_id, zone_item_arr);
@@ -596,7 +620,7 @@ Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_ar
 }
 
 
-Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr){
+Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr, count_frame){
 	for (var explosion_id in  this.EXPLOSION_LIST){
         var explosion = this.EXPLOSION_LIST[explosion_id];
 		//console.log('explosion '+JSON.stringify(explosion));
@@ -605,7 +629,7 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr){
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
         if (tankid > 0){ //real user                    
             var tank = this.PLAYER_LIST[tankid];			
-            tank.updateAllExplosionsAroundMe(zone_explosion_arr);
+            tank.updateAllExplosionsAroundMe(zone_explosion_arr, count_frame);
         }
     }
 	
@@ -775,7 +799,7 @@ Room.prototype.createNewBullets = function (tankfire) {
     }
     for (var i =0; i < shooting_streng; i++){
         this.count_bullet++;
-        if (this.count_bullet>1000000) {
+        if (this.count_bullet>10000) {
             this.count_bullet=1;
         }
         var gocban=dt_angle+i*dt_ag;
@@ -797,6 +821,9 @@ Room.prototype.createNewBullets = function (tankfire) {
 
 
     this.count_explosion++;
+    if(this.count_explosion>1000){
+        this.count_explosion=1;
+    }
     var gocdg_2=g_angle*3.141592653589/180; 
     var xbegin_2=tankfire.pos.x+23*Math.cos(gocdg_2)+xt;
     var ybegin_2=tankfire.pos.y+23*Math.sin(gocdg_2)+yt;

@@ -550,10 +550,11 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr, co
                             //mark to not duplicate
                             current_tank.is_collided_with_other_tank = true;
                             other_tank.is_collided_with_other_tank = true;                                           
-												
+												                            
+                            var delta_hp = dead_tank.hp;							
                             //mark to process at next frame
-                            current_tank.reduceHp(dead_tank.hp);
-                            other_tank.reduceHp(dead_tank.hp);
+                            current_tank.reduceHp(delta_hp);
+                            other_tank.reduceHp(delta_hp);
 							
 							//generate item      
 							var tank_arr_1 = this.getAllTanksAroundMe(dead_tank.zone_id, zone_tank_arr);                 

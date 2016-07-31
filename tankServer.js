@@ -327,6 +327,7 @@ function deleteDeadPlayer(room){
 
 setInterval(function(){	
 	count_frame++;
+	
 	for(var room_name  in ROOM_LIST){
 		var room=ROOM_LIST[room_name];		
 		deleteDeadPlayer(room);		//delete dead player from room
@@ -351,11 +352,16 @@ setInterval(function(){
 
 				if (count_frame % 8 === 0 ){
 					objectsend.o=socket.player.pack_obs;
-					count_frame = 0;
+		
 				}				
 				socket.emit('UpdatePosition',objectsend);							
 		}		
 	}
+	
+	if (count_frame % 8 === 0 ){
+		count_frame = 0;
+	}
+	
 },FRAME_STEP_INTERVAL*1000);
 
 

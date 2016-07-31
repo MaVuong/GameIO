@@ -68,8 +68,6 @@ Player.prototype.setBasicParams =function(){
     this.dtmove=0;
     this.isFire=false;
 
-    this.time_cout_update=18;// chi trong gioi han 0-20;
-
     this.count_skip=0;
     this.update_step=false;
 
@@ -543,14 +541,12 @@ Player.prototype.checkItem = function (item) {
 
 
 //get all tanks around one tank to send to client
-Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
-    this.time_cout_update=this.time_cout_update+1;
+Player.prototype.updateAllTanksAroundMe = function(full_tank_list, count_frame){    
     var send_full_infomation=false;
-    if (this.time_cout_update>=10) {
-        send_full_infomation=true;
-        this.time_cout_update=0;
+    if (count_frame === 2) {
+        send_full_infomation=true;        
     }
-    //console.log("this.time_cout_update: %s",this.time_cout_update);
+    
     this.pack_player =[];
     var tank_arr = Utils.getAllObjectsAroundMe(this.zone_id, full_tank_list);
     for (var i=0; i < tank_arr.length; i++){
@@ -627,9 +623,10 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list){
                 r:r_g_t,
                 m:parseInt(tank.tank_moving_speed)
             };
+			
+
             if (send_full_infomation) {
                 
-
                 var name=tank.name;
                 if(name.trim().length<1){
                     name="Guest"+Math.abs(parseInt(tank.id));

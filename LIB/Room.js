@@ -159,7 +159,7 @@ Room.prototype.updateFrameStep = function(delta_time, count_frame) {
 
     //this.updateItemsAroundTanks(zone_item_arr);
 
-    this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr, zone_item_arr);
+    this.updateObjectsAroundTanks(zone_tank_arr, zone_bullet_arr, zone_explosion_arr, zone_item_arr, count_frame);
 
 	//increase death_life count of dead tanks
 	this.increaseDeadTankCountTime();
@@ -603,11 +603,11 @@ Room.prototype.checkCollisionOfTanks = function(zone_tank_arr, zone_item_arr, co
 		}
 }
 
-Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_arr, zone_explosion_arr, zone_item_arr){
+Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_arr, zone_explosion_arr, zone_item_arr, count_frame){	
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
         if (tankid > 0){ //real user
             var tank = this.PLAYER_LIST[tankid];
-            tank.updateAllTanksAroundMe(zone_tank_arr);
+            tank.updateAllTanksAroundMe(zone_tank_arr, count_frame);
             tank.updateAllBulletsAroundMe(zone_bullet_arr);
             tank.updateAllObstaclesAroundMe(this.ZONE_LIST);			
 			tank.updateAllItemsAroundMe(zone_item_arr);
@@ -616,7 +616,7 @@ Room.prototype.updateObjectsAroundTanks = function(zone_tank_arr, zone_bullet_ar
 	
 	for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
         var tank = this.DEAD_PLAYER_LIST[tankid];			
-            tank.updateAllTanksAroundMe(zone_tank_arr);
+            tank.updateAllTanksAroundMe(zone_tank_arr, count_frame);
             tank.updateAllBulletsAroundMe(zone_bullet_arr);
 			tank.updateAllItemsAroundMe(zone_item_arr);
     }

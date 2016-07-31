@@ -630,7 +630,7 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr, count_
         Utils.putObjectIntoRightZone(explosion, explosion.pos.x, explosion.pos.y, zone_explosion_arr);  
     }
     for (var tankid  in this.PLAYER_LIST) {// update thong tin xu ly cac xe tank
-        if (tankid > 0){ //real user                    
+        if (tankid > 0){ //real user            			
             var tank = this.PLAYER_LIST[tankid];			
             tank.updateAllExplosionsAroundMe(zone_explosion_arr, count_frame);
         }
@@ -639,7 +639,7 @@ Room.prototype.updateExplosionsAroundTanks = function(zone_explosion_arr, count_
 	
 	for (var tankid  in this.DEAD_PLAYER_LIST) {// update thong tin xu ly cac xe tank        
         var tank = this.DEAD_PLAYER_LIST[tankid];			
-        tank.updateAllExplosionsAroundMe(zone_explosion_arr);		
+        tank.updateAllExplosionsAroundMe(zone_explosion_arr, count_frame);		
     }
 }
 

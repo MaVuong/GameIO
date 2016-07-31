@@ -767,8 +767,8 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, cou
 	}
 
 
-	if (this.pack_explosion.length > 0)
-        console.log("before push "+count_frame +"|" +JSON.stringify(this.pack_explosion));
+	//if (this.pack_explosion.length > 0)
+        //console.log("before push "+count_frame +"|" +JSON.stringify(this.pack_explosion));
     for (var i=0; i < explosion_arr.length; i++){
         var explosion = explosion_arr[i];
 
@@ -794,7 +794,7 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, cou
             });
 
 
-            console.log("update push explosion: count_frame "+count_frame +"|" +JSON.stringify(this.pack_explosion));
+         //   console.log("update push explosion: count_frame "+count_frame +"|"+ this.id +"|"+JSON.stringify(this.pack_explosion));
 
         }
         

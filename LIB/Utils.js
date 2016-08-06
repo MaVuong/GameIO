@@ -237,6 +237,19 @@ Utils.isPointInRetangle =function(x, y, x_rect, y_rect, w, h){
     return (dtX < kcW && dtY < kcH); 
 }
 
+Utils.copyArray = function(srcArr){
+	var arr = [];
+	for (var i=0; i < srcArr.length; i++){
+		arr.push(srcArr[i]);
+	}
+	return arr;
+}
+
+Utils.copyToArray = function(srcArr, destArr){
+	for (var i=0; i < srcArr.length; i++){
+		destArr.push(srcArr[i]);
+	}	
+}
 
 Utils.logObject = function (obj) {
     //console.log("info :x=%s , y=%s, w=%s, h=%s", obj.x, obj.y, obj.w, obj.h);

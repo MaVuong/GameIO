@@ -2,13 +2,23 @@ var Player=require('./LIB/Player');
 var Code=require('./LIB/Code');
 var Room=require('./LIB/Room');
 var Utils = require('./LIB/Utils');
+var os = require('os');
+var mongojs = require("mongojs");
+var ifaces = os.networkInterfaces();
 
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http,{'pingInterval': 2000, 'pingTimeout': 5000});
-
+//var us_server = "10.138.0.2";
+var us_server = "192.168.1.101";
+var server_id = 0;
 app.use(express.static(__dirname + '/DataGame'));
+var update_best_player_frame = 0;
+var ready_best_player = true;
+var FRAME_DURATION = 40;
+var db = mongojs('localhost:27017/tankio', ['players']);
+
 
 app.get('/config', function(req, res){
   console.log('come here');
@@ -34,11 +44,15 @@ http.listen(2020,'::', function(){
 	console.log('---------------->listening on : 2020');
 });
 
+
+
 var CODE_LIST={};
 var WAITING_SOCKET_LIST={};
 var SOCKET_LIST={};
 var ROOM_LIST={};
 var ADMIN_CONNECT={};
+var OTHER_SERVERS = {};
+var BEST_PLAYERS = [];
 
 var room_count=0;
 var admin_id=0;
@@ -46,13 +60,175 @@ var waiting_id=0;
 var MAX_TRY = 6;
 var count_frame = 0;
 var FRAME_STEP_INTERVAL = 40/1000;
+var isMasterServer = null;
+
+getIpAddress(loadData, sendMyInfo);
+
+function getIpAddress(cb1, cb2){
+	Object.keys(ifaces).forEach(function (ifname) {
+	  ifaces[ifname].forEach(function (iface) {
+		if ('IPv4' !== iface.family || iface.internal !== false) {
+		  // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+		  return null;
+		}
+		isMasterServer = (iface.address === us_server); 
+		console.log('isMasterServer '+isMasterServer);
+		if (isMasterServer){
+			cb1();
+		} else {
+			cb2();
+		}
+	  });
+	});	
+}
+
+
+function loadData(){
+	//load best players from mongodb
+	findBestPlayersList(initBestPlayerArr);
+	setInterval(function(){	
+		writeBestPlayerList();//write data to database
+	},FRAME_DURATION*250);//10s
+	
+}
+//load the data on databse to BEST_PLAYERS 
+function initBestPlayerArr(items){
+	for (var i=0; i < items.length; i++){
+		var player = items[i];
+		BEST_PLAYERS.push({n:player.name, s:player.score});				
+	}
+}
+
+
+
+
+//================================Begin slave server functions==========================================================//
+
+function sendMyInfo(){
+	
+	var socket = require("socket.io-client")('http://'+us_server+':2020');
+	
+	socket.on('connect', function () {		
+		socket.emit('MyInfo', JSON.stringify({platform:-100}));					
+		socket.on('ConnectionEstablished',function(){ //for update score		
+			sendBestPlayers(socket);
+		
+				socket.on('BestPlayers',function(client_data){ //for update score
+					//console.log("receive BestPlayers "+JSON.stringify(client_data) );
+					updateBestPlayers(client_data);
+					//console.log("after receive BestPlayers "+JSON.stringify(BEST_PLAYERS) );			
+		});
+		
+	});
+		
+	});	
+}
+
+
+
+function updateBestPlayers(client_data){
+	if (ready_best_player){
+		ready_best_player = false;	
+		BEST_PLAYERS = [];
+		for (var i=0; i < client_data.length; i++){				
+			BEST_PLAYERS.push(client_data[i]);
+		}	
+		ready_best_player = true;		
+	}
+}
+
+
+//send best player to master server
+function sendBestPlayers(socket){		
+	setInterval(function(){	
+		var objToSend = getBestPlayers();				
+		socket.emit('updateScore123', JSON.stringify(objToSend));
+	},4000);
+	
+	
+}
+
+	
+
+//================================End slave server functions==========================================================//
+
+//===============================Begin master server functions =======================================================//
+
+function findBestPlayersList(cb){	
+	db.players.find().toArray(function(err, items) {
+          if (err) {
+            console.log(err);
+          } else {	
+			cb(items);
+          }          
+});
+}
+
+
+
+//write best player to database
+function writeBestPlayerList(cb){
+	ready_best_player = false;
+	var tmpArr = Utils.copyArray(BEST_PLAYERS);
+	ready_best_player = true;
+
+	if (tmpArr.length > 0){				
+		mergeBestPlayerAndStore(tmpArr);		
+	};
+	
+	}
+
+
+function mergeBestPlayerAndStore(current_best_players){	
+	db.players.find().toArray(function(err, items) {
+          if (err) {
+            console.log(err);
+          } else {	
+			var arr = mergeBestPlayers(current_best_players, items);
+			//reset best player in the memore
+			ready_best_player = false;
+			BEST_PLAYERS = [];
+			Utils.copyToArray(arr, BEST_PLAYERS);		
+			ready_best_player = true;
+			storeBestPlayers(arr);
+          }          
+});
+}
+
+function storeBestPlayers(best_player_arr){
+	db.players.remove({}, function(err,res){
+		if (!err && ready_best_player){
+				for (var i =0; i < best_player_arr.length; i++){
+					var player = best_player_arr[i];				
+					db.players.insert({name:player.n,score:player.s});					
+				}
+		}
+	});	
+}
+
+
+function updateBestPlayerAtMaster(current_best_players){
+	var i= 0;
+	var count = 0;				
+	BEST_PLAYERS = [];
+	while (i < current_best_players.length && count < 5){				
+		BEST_PLAYERS.push(current_best_players[i]);
+		count++;			
+		i++;
+	}						
+		
+}
+
+//===============================End master server functions =======================================================//
+
 
 io.on('connection', function(socket){
+	console.log("receive connection");
 	waiting_id=waiting_id+1;
 	if (waiting_id>99999999) {
 		waiting_id=1;
 	}
-	//var address = socket.handshake.address;
+	var address = socket.handshake.address;
  	//console.log("address: %s",address);
 	socket.wait_id=waiting_id;
 	socket.validatetime=MAX_TRY;
@@ -80,11 +256,27 @@ io.on('connection', function(socket){
 		}
 	});
 
+	//get score update from slave server
+	socket.on('updateScore123', function(client_data){ //for update score
+			if (ready_best_player){
+				ready_best_player = false;
+				var received_best_players = JSON.parse(client_data);			
+				
+				var current_best_players = Utils.copyArray(BEST_PLAYERS);			
+				for (var i = 0; i < received_best_players.length; i++){
+					current_best_players.push(received_best_players[i]);				
+				} 
+				current_best_players.sort(function(player1, player2) { return (player2.s - player1.s);});				
+				updateBestPlayerAtMaster(current_best_players);
+				ready_best_player = true;
+			}
+	});
 	
+		
 	socket.on('MyInfo',function(client_data){
-
 		var client_json_data=JSON.parse(client_data);
-		//console.log("MyInfo:"+ JSON.stringify(client_json_data));
+		
+		
 		if (client_json_data.platform>8&&client_json_data.platform<12) {
 			var codeend=new Code();
 			if (client_json_data.platform===9) {
@@ -117,7 +309,17 @@ io.on('connection', function(socket){
 				ADMIN_CONNECT[socket.admin_id]=socket;
 				
 				//connection view info server, lma 1 app quan ly cai nay luon 
-			}else{
+			}else if (client_json_data.platform===-100) {//other servers
+				delete WAITING_SOCKET_LIST[socket.wait_id];
+
+				server_id++;
+				socket.validatetime=2000;
+				socket.wait_id="YYY";
+				socket.server_id=""+server_id;
+				OTHER_SERVERS[socket.server_id]=socket;				
+				socket.emit('ConnectionEstablished');
+				
+			} else	{
 				console.log("AAAAAAA:"+client_data);
 				socket.disconnect();
 			}
@@ -186,7 +388,6 @@ io.on('connection', function(socket){
 
 		}
 	});
-
 
 
 	socket.on('changeDir',function(client_data){
@@ -408,10 +609,33 @@ setInterval(function(){
 },3600000);//60x60x1000
 
 
-//get player with highest score
-
+//send best players ever to other servers and clients
 setInterval(function(){	
+		
+		var tmpArr = Utils.copyArray(BEST_PLAYERS);
+		
+		//push best player list to clients
+		for (var socket_name in SOCKET_LIST) {
+			var socket=SOCKET_LIST[socket_name];				
+			socket.emit('BestPlayersEver', tmpArr);				
+			//console.log("send best player to client "+JSON.stringify(tmpArr));
+		}
+		
+		//push best player list to slave servers		
+		if (Object.keys(OTHER_SERVERS).length > 0){
+			for (var socket_name in OTHER_SERVERS) {
+			var socket=OTHER_SERVERS[socket_name];				
+				//console.log("send best player to other server "+ready_best_player+"|"+JSON.stringify(tmpArr));
+			socket.emit('BestPlayers',tmpArr);				
+			}		
+		}
+	
+},5000);
 
+
+
+//update and send best players in the room to all clients
+setInterval(function(){	
 	for(var room_name  in ROOM_LIST){
 		var room = ROOM_LIST[room_name];		
 		room.updateBestPlayers(); //update the map of all tanks
@@ -427,3 +651,50 @@ setInterval(function(){
 	}
 
 },5000);
+
+
+
+//get best players in this server, used with both master and slave servers
+function getBestPlayers(){
+	var best_players =[];
+
+		for (var room_name in ROOM_LIST) {			
+			var room = ROOM_LIST[room_name];
+			var room_best_players = room.best_players;	
+			for (var i =0; i < room_best_players.length; i++){
+				best_players.push(room_best_players[i]);
+			} 										
+		}
+		
+	best_players.sort(function(player1, player2) { return (player2.s - player1.s);});	
+	
+	var i= 0;
+	var count = 0;
+	var arr = [];
+	while (i < best_players.length && count < 5){				
+		arr.push(best_players[i]);
+			count++;			
+			i++;
+	}	
+	return arr;
+}
+
+function mergeBestPlayers(arr1, arr2){
+	
+	for (var i=0; i < arr2.length; i++){
+		arr1.push(arr2[i]);
+	}
+	
+	arr1.sort(function(player1, player2) { return (player2.s - player1.s);});	
+	
+	var i= 0;
+	var count = 0;
+	var arr = [];
+	while (i < arr1.length && count < 5){				
+		arr.push(arr1[i]);
+			count++;			
+			i++;
+	}	
+	return arr;
+	
+}

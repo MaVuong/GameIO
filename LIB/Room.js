@@ -164,9 +164,9 @@ Room.prototype.updateFrameStep = function(delta_time, count_frame) {
 	//increase death_life count of dead tanks
 	this.increaseDeadTankCountTime();
 	
-    //this.updateAi(zone_tank_arr); //change the direction if a number is reached
+    this.updateAi(zone_tank_arr); //change the direction if a number is reached
 
-    //this.updateAddingAi(delta_time);
+    this.updateAddingAi(delta_time);
 
 
     //update gun angle and fire when finish rotate the gun
@@ -222,8 +222,8 @@ Room.prototype.addPlayer = function (player) {
     player.pos.x = Number(free_pos.x);
     player.pos.y = Number(free_pos.y);
 
-    player.pos.x=0;
-    player.pos.y=0;
+    //player.pos.x=0;
+    //player.pos.y=0;
 
     this.last_post_tank_added = free_pos; //store last position the tank added
 	this.count_real_user++;
@@ -248,11 +248,9 @@ Room.prototype.addingAi = function() {
 		var available_slots = Room.MAX_PLAYER - (this.count_real_user + this.count_boot);
 		
 		if (available_slots > 0){
-			var temp = Math.ceil(available_slots * Math.random());
-		
+			var temp = Math.ceil(available_slots * Math.random());		
 			countAddAI = temp < 10 ? temp : 10;			
-		}
-	
+		}	
 	}
 
 		
@@ -375,8 +373,7 @@ Room.prototype.checkCollisionOfBullets = function (zone_tank_arr) {
 				collision = bullet.checkCollisionWithObstacle(obstacle_arr[i]);
 				if (collision) {
 
-					this.count_explosion++;
-                    console.log("explosion "+this.count_explosion);
+					this.count_explosion++;                    
                     if(this.count_explosion>1000){
                         this.count_explosion=1;
                     }
@@ -659,7 +656,7 @@ Room.prototype.updateGunAngleAndFire =function(delta_time){
             if (tank.ammo <= 0) {
                 return;
             }
-            tank.ammo-=1;
+            //tank.ammo-=1;
             this.createNewBullets(tank);
         }
     }
@@ -802,25 +799,28 @@ Room.prototype.createNewBullets = function (tankfire) {
         dt_ag=6;
     }
     for (var i =0; i < shooting_streng; i++){
-        this.count_bullet++;
-        if (this.count_bullet>10000) {
-            this.count_bullet=1;
-        }
-        var gocban=dt_angle+i*dt_ag;
-        if (gocban>360) {
-            gocban=gocban-360;
-        }else if (gocban<0) {
-            gocban=360+gocban;
-        }
-        var gocdg=gocban*3.141592653589/180; 
-        var xbegin=tankfire.pos.x+23*Math.cos(gocdg)+xt;
-        var ybegin=tankfire.pos.y+23*Math.sin(gocdg)+yt;
+		if (tankfire.ammo > 0){
+			tankfire.ammo--;
+			this.count_bullet++;
+			if (this.count_bullet>10000) {
+				this.count_bullet=1;
+			}
+			var gocban=dt_angle+i*dt_ag;
+			if (gocban>360) {
+				gocban=gocban-360;
+			}else if (gocban<0) {
+				gocban=360+gocban;
+			}
+			var gocdg=gocban*3.141592653589/180; 
+			var xbegin=tankfire.pos.x+23*Math.cos(gocdg)+xt;
+			var ybegin=tankfire.pos.y+23*Math.sin(gocdg)+yt;
 
-        var diembanbandau=new Vector(xbegin,ybegin);
-        var new_bullet=new Bullet(tankfire.id,this.count_bullet);
-        
-        new_bullet.setMoveDirection(gocban,diembanbandau);
-        this.BULLET_LIST[new_bullet.id]=new_bullet;
+			var diembanbandau=new Vector(xbegin,ybegin);
+			var new_bullet=new Bullet(tankfire.id,this.count_bullet);
+			
+			new_bullet.setMoveDirection(gocban,diembanbandau);
+			this.BULLET_LIST[new_bullet.id]=new_bullet;
+		}		
     }
 
 

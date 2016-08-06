@@ -3,6 +3,7 @@ var Utils = require('./Utils');
 
 function Player(id) {
     this.id = id;   
+	
     this.pos = new Vector(0, 0);
     this.w = 25;
     this.h = 22;	
@@ -525,7 +526,7 @@ Player.prototype.adjustLevel = function () {
 Player.prototype.checkItem = function (item) {
 	
 	
-    if (Utils.distace2Object(item.pos, this.pos) < 50 && !item.is_moving){		
+    if (Utils.distace2Object(item.pos, this.pos) < 30 && !item.is_moving){		
         item.is_remove = true;
         if (item.type === 1 && this.ammo < this.max_ammo){
             this.ammo = (this.ammo + item.value < this.max_ammo) ? this.ammo + item.value : this.max_ammo;

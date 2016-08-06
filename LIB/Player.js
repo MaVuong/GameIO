@@ -134,7 +134,7 @@ Player.getMaxHp = function (level){
 }
 
 Player.getMaxAmmo = function (level){
-    return 140 +(level-1)*20;
+    return 140 +(level-1)*2;
 }
 
 //level 1-9 shoot 1 bullet, 10 -34: 2 bullet; 35 -79 shoot 3 bullet; 80 shoot 4 bullet

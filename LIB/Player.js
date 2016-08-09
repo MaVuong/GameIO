@@ -555,7 +555,7 @@ Player.prototype.updateAllTanksAroundMe = function(full_tank_list, count_frame){
         //don't send information as this tank is in collision
         var dt_x_c=Math.abs(Number(tank.pos.x)-this.pos.x);
         var dt_y_c=Math.abs(Number(tank.pos.y)-this.pos.y);
-        if (dt_x_c<300&&dt_y_c<200) {//gioi han chi la 600x400 tren man hinh thuong va retina la 1200x800
+        if (dt_x_c<350&&dt_y_c<200) {//gioi han chi la 600x400 tren man hinh thuong va retina la 1200x800
 
             var dirMV=tank.moving_direction;
             if(tank.tank_rotating_status>0||tank.isStopMove){
@@ -773,7 +773,7 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, cou
         var dt_x_c=Math.abs(Number(explosion.pos.x)-this.pos.x);
         var dt_y_c=Math.abs(Number(explosion.pos.y)-this.pos.y);
 
-        if (dt_x_c<300&&dt_y_c<200) {
+        if (dt_x_c<350&&dt_y_c<200) {
             var t_xpos=Number(explosion.pos.x);
             var t_ypos=Number(explosion.pos.y);
             t_xpos=Number(t_xpos+2000).toFixed(0);
@@ -789,8 +789,7 @@ Player.prototype.updateAllExplosionsAroundMe = function(full_explosion_list, cou
                 p:Psend,
                 t:explosion.tid,// tank id
                 e: explosion.ex_type
-            });
-
+            });			
 
          //   console.log("update push explosion: count_frame "+count_frame +"|"+ this.id +"|"+JSON.stringify(this.pack_explosion));
 

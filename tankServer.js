@@ -11,7 +11,7 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http,{'pingInterval': 2000, 'pingTimeout': 5000});
 var us_server = "10.138.0.2";
-//var us_server = "192.168.1.101";
+//var us_server = "10.1.63.32";
 var server_id = 0;
 app.use(express.static(__dirname + '/DataGame'));
 var update_best_player_frame = 0;
@@ -59,7 +59,7 @@ var admin_id=0;
 var waiting_id=0;
 var MAX_TRY = 6;
 var count_frame = 0;
-var FRAME_STEP_INTERVAL = 40/1000;
+var FRAME_STEP_INTERVAL = 40; //miliseconds
 var isMasterServer = null;
 
 getIpAddress(loadData, sendMyInfo);
@@ -532,7 +532,7 @@ setInterval(function(){
 	for(var room_name  in ROOM_LIST){
 		var room=ROOM_LIST[room_name];		
 		deleteDeadPlayer(room);		//delete dead player from room
-		room.updateFrameStep(FRAME_STEP_INTERVAL, count_frame); //update every thing in the room
+		room.updateFrameStep(FRAME_STEP_INTERVAL/1000, count_frame); //update every thing in the room
 	}
 	
 	if (count_frame%2 === 0 ){ //send data after 2 frame
@@ -557,17 +557,32 @@ setInterval(function(){
 				}				
 				socket.emit('UpdatePosition',objectsend);							
 		}		
+	} else {
+		if (count_frame === 1){
+			for(var room_name  in ROOM_LIST){
+				var room = ROOM_LIST[room_name];		
+				room.updateTankMap(); //update the map of all tanks
+			}
+
+			for (var socket_name in SOCKET_LIST) {
+				var socket=SOCKET_LIST[socket_name];
+				
+					var room = ROOM_LIST[socket.room_name];				
+					socket.emit('UpdateTankMap',room.all_tank_pack);				
+			}
+			
+		}
 	}
 	
-	if (count_frame % 8 === 0 ){
+	if (count_frame === 24 ){
 		count_frame = 0;
 	}
 	
-},FRAME_STEP_INTERVAL*1000);
+},FRAME_STEP_INTERVAL);
 
 
 //update all tank in the map
-
+/*
 setInterval(function(){	
 
 	for(var room_name  in ROOM_LIST){
@@ -585,7 +600,7 @@ setInterval(function(){
 
 
 },1000);
-
+*/
 
 
 
@@ -635,7 +650,7 @@ setInterval(function(){
 
 
 //update and send best players in the room to all clients
-setInterval(function(){	
+setInterval(function(){
 	for(var room_name  in ROOM_LIST){
 		var room = ROOM_LIST[room_name];		
 		room.updateBestPlayers(); //update the map of all tanks

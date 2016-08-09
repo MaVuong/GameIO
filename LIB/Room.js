@@ -99,9 +99,9 @@ Room.prototype.updateTankMap = function() {
 	this.all_tank_pack = [];
 	for (var tank_id in this.PLAYER_LIST){
 		var tank = this.PLAYER_LIST[tank_id];
-		this.all_tank_pack.push({
-			x:Number(tank.pos.x) ,
-            y:Number(tank.pos.y)
+		this.all_tank_pack.push({			 
+			x:parseInt(tank.pos.x),
+            y:parseInt(tank.pos.y)
 		});
 	}
 }	

@@ -95,7 +95,8 @@ function loadData(){
 function initBestPlayerArr(items){
 	for (var i=0; i < items.length; i++){
 		var player = items[i];
-		BEST_PLAYERS.push({n:player.name, s:player.score});				
+		BEST_PLAYERS.push({id:player.id, n:player.name, s:player.score});	
+		//console.log("init best player "+JSON.stringify(BEST_PLAYERS));	
 	}
 }
 
@@ -149,6 +150,7 @@ function sendBestPlayers(socket){
 }
 
 	
+	
 
 //================================End slave server functions==========================================================//
 
@@ -167,7 +169,7 @@ function findBestPlayersList(cb){
 
 
 //write best player to database
-function writeBestPlayerList(cb){
+function writeBestPlayerList(){
 	ready_best_player = false;
 	var tmpArr = Utils.copyArray(BEST_PLAYERS);
 	ready_best_player = true;
@@ -199,8 +201,8 @@ function storeBestPlayers(best_player_arr){
 	db.players.remove({}, function(err,res){
 		if (!err && ready_best_player){
 				for (var i =0; i < best_player_arr.length; i++){
-					var player = best_player_arr[i];				
-					db.players.insert({name:player.n,score:player.s});					
+					var player = best_player_arr[i];						
+					db.players.insert({id:player.id, name:player.n,score:player.s});					
 				}
 		}
 	});	
@@ -262,12 +264,15 @@ io.on('connection', function(socket){
 				ready_best_player = false;
 				var received_best_players = JSON.parse(client_data);			
 				
-				var current_best_players = Utils.copyArray(BEST_PLAYERS);			
-				for (var i = 0; i < received_best_players.length; i++){
-					current_best_players.push(received_best_players[i]);				
-				} 
-				current_best_players.sort(function(player1, player2) { return (player2.s - player1.s);});				
-				updateBestPlayerAtMaster(current_best_players);
+				var current_best_players = Utils.copyArray(BEST_PLAYERS);	
+
+				//console.log("recieve best player "+JSON.stringify(ready_best_player));
+				//console.log("current best player "+JSON.stringify(current_best_players));
+				
+				var arr = mergeBestPlayers(current_best_players, received_best_players);
+				//console.log("arr "+JSON.stringify(arr));
+				arr.sort(function(player1, player2) { return (player2.s - player1.s);});				
+				updateBestPlayerAtMaster(arr);
 				ready_best_player = true;
 			}
 	});
@@ -545,8 +550,7 @@ setInterval(function(){
 					b:socket.player.pack_bullet,
 					e:socket.player.pack_explosion
 				};
-				//if (socket.player.pack_explosion.length >0)
-				//	console.log("server send, count_frame "+count_frame +"|"+socket.player.id+"|"+JSON.stringify(socket.player.pack_explosion));
+				
 				if (count_frame % 4 === 0 ){
 					objectsend.i=socket.player.pack_item;
 				}
@@ -632,7 +636,7 @@ setInterval(function(){
 		//push best player list to clients
 		for (var socket_name in SOCKET_LIST) {
 			var socket=SOCKET_LIST[socket_name];				
-			socket.emit('BestPlayersEver', tmpArr);				
+			socket.emit('BestPlayers', tmpArr);				
 			//console.log("send best player to client "+JSON.stringify(tmpArr));
 		}
 		
@@ -649,20 +653,11 @@ setInterval(function(){
 
 
 
-//update and send best players in the room to all clients
+//update best players in the room
 setInterval(function(){
 	for(var room_name  in ROOM_LIST){
 		var room = ROOM_LIST[room_name];		
 		room.updateBestPlayers(); //update the map of all tanks
-	}
-
-	for (var socket_name in SOCKET_LIST) {
-		var socket=SOCKET_LIST[socket_name];
-		//socket can be 
-		
-		var room = ROOM_LIST[socket.room_name];		
-		socket.emit('BestPlayers', room.best_players);							
-		
 	}
 
 },5000);
@@ -694,10 +689,25 @@ function getBestPlayers(){
 	return arr;
 }
 
+
 function mergeBestPlayers(arr1, arr2){
 	
 	for (var i=0; i < arr2.length; i++){
-		arr1.push(arr2[i]);
+		var player2 = arr2[i];
+		var exist = false;		
+		for (var j=0; j < arr1.length; j++){
+			
+			if (player2.id === arr1[j].id){
+				exist = true;
+				if (player2.s > arr1[j].s){
+					arr1[j].s =player2.s;
+				}
+				break;
+			} 
+		}
+		if (!exist){
+			arr1.push(player2);
+		}	
 	}
 	
 	arr1.sort(function(player1, player2) { return (player2.s - player1.s);});	
@@ -713,3 +723,15 @@ function mergeBestPlayers(arr1, arr2){
 	return arr;
 	
 }
+
+//send best player to master server	
+	setInterval(function(){	
+		var tmpArr = Utils.copyArray(BEST_PLAYERS);
+		var current_best_players = getBestPlayers();		
+		var arr = mergeBestPlayers(tmpArr, current_best_players);
+				//console.log("arr "+JSON.stringify(arr));
+				arr.sort(function(player1, player2) { return (player2.s - player1.s);});				
+				updateBestPlayerAtMaster(arr);		
+		
+	},4000);
+	

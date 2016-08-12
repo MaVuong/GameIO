@@ -84,7 +84,10 @@ Room.prototype.updateBestPlayers = function(){
             if (name.length==0) {
                 name="Guest"+Math.abs(player.id);
             }
+			var player_id = Math.abs(player.id);
+			
 			var player = {
+				id: player_id,
 				n:name,
 				s:Number(sc_x)
 			};			
@@ -257,7 +260,7 @@ Room.prototype.addingAi = function() {
 		for (var i_ad = 0; i_ad < countAddAI; i_ad++) {
 			var pos = this.getFreePos();        
             this.ai_id= this.ai_id - 1;
-            if (this.ai_id < -1000000) {
+            if (this.ai_id < -10000000) {
                 this.ai_id = -1;
             }
             var ai = new AI(this.ai_id);            
